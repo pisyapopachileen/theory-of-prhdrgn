@@ -1,2100 +1,3979 @@
-var id = "CollatzHypothesis_3n1";
-var name = "Гипотеза Коллатца 3n+1";
-var description = "Теория, вдохновлённая гипотезой Коллатца, расширенная на множественные измерения переменных, предельные счёты и теоретико-дифференциальные конструкции; 0⁰ трактуется как бесконечность.";
-var authors = "Авторы: prhdrgn";
+var id = "collatz_hypothesis_3n1_complete";
+var name = "Гипотеза Коллатца 3n+1 — полный пакет";
+var description = "Расширенная пользовательская теория, множество уникальных формул и процедур, совместимая с Theory SDK.";
+var authors = "ChatGPT";
 var version = 1;
+
 var currency;
-var rho = BigNumber.ZERO;
-var tau429_display = "τ_429 = max ρ^50";
-var tau_429 = BigNumber.ZERO;
-var variables = [];
+var rho, sigma, delta, lambdaVar, omega, psi, theta, zeta;
 var upgrades = [];
-var milestones = [];
-var achievements = [];
+var tau429;
+
 function init() {
-    currency = theory.createCurrency();
-    rho = currency;
-    for (var i = 1; i <= 50; i++) {
-        variables.push(theory.createVariable(i, BigNumber.ZERO));
-    }
-    for (var i = 1; i <= 40; i++) {
-        upgrades.push(theory.createUpgrade(i, BigNumber.fromString((i*i).toString())));
-    }
-    for (var i = 1; i <= 20; i++) {
-        milestones.push(theory.createMilestone(i));
-    }
-    for (var i = 1; i <= 25; i++) {
-        achievements.push(theory.createAchievement(i));
-    }
-    tau_429 = BigNumber.ZERO;
+    currency = theory.createCurrency("ρ", "ρ");
+    upgrades[0] = theory.createUpgrade(0, currency, new ExponentialCost(1, Math.log2(2)));
+    upgrades[0].getDescription = function(amount) { return "u1=" + getUpgradeValue(0, upgrades[0].level + amount).toString(0); };
+    upgrades[0].getInfo = function(amount) { return "u1=" + getUpgradeValue(0, upgrades[0].level + amount).toString(0); };
+    upgrades[1] = theory.createUpgrade(1, currency, new ExponentialCost(10, Math.log2(3)));
+    upgrades[1].getDescription = function(amount) { return "u2=" + getUpgradeValue(1, upgrades[1].level + amount).toString(0); };
+    upgrades[1].getInfo = function(amount) { return "u2=" + getUpgradeValue(1, upgrades[1].level + amount).toString(0); };
+    upgrades[2] = theory.createUpgrade(2, currency, new ExponentialCost(100, Math.log2(4)));
+    upgrades[2].getDescription = function(amount) { return "u3=" + getUpgradeValue(2, upgrades[2].level + amount).toString(0); };
+    upgrades[2].getInfo = function(amount) { return "u3=" + getUpgradeValue(2, upgrades[2].level + amount).toString(0); };
+    upgrades[3] = theory.createUpgrade(3, currency, new ExponentialCost(1000, Math.log2(5)));
+    upgrades[3].getDescription = function(amount) { return "u4=" + getUpgradeValue(3, upgrades[3].level + amount).toString(0); };
+    upgrades[3].getInfo = function(amount) { return "u4=" + getUpgradeValue(3, upgrades[3].level + amount).toString(0); };
+    upgrades[4] = theory.createUpgrade(4, currency, new ExponentialCost(10000, Math.log2(6)));
+    upgrades[4].getDescription = function(amount) { return "u5=" + getUpgradeValue(4, upgrades[4].level + amount).toString(0); };
+    upgrades[4].getInfo = function(amount) { return "u5=" + getUpgradeValue(4, upgrades[4].level + amount).toString(0); };
+    upgrades[5] = theory.createUpgrade(5, currency, new ExponentialCost(100000, Math.log2(7)));
+    upgrades[5].getDescription = function(amount) { return "u6=" + getUpgradeValue(5, upgrades[5].level + amount).toString(0); };
+    upgrades[5].getInfo = function(amount) { return "u6=" + getUpgradeValue(5, upgrades[5].level + amount).toString(0); };
+    upgrades[6] = theory.createUpgrade(6, currency, new ExponentialCost(10000000, Math.log2(8)));
+    upgrades[6].getDescription = function(amount) { return "u7=" + getUpgradeValue(6, upgrades[6].level + amount).toString(0); };
+    upgrades[6].getInfo = function(amount) { return "u7=" + getUpgradeValue(6, upgrades[6].level + amount).toString(0); };
+    upgrades[7] = theory.createUpgrade(7, currency, new ExponentialCost(100000000, Math.log2(9)));
+    upgrades[7].getDescription = function(amount) { return "u8=" + getUpgradeValue(7, upgrades[7].level + amount).toString(0); };
+    upgrades[7].getInfo = function(amount) { return "u8=" + getUpgradeValue(7, upgrades[7].level + amount).toString(0); };
+    upgrades[8] = theory.createUpgrade(8, currency, new ExponentialCost(1000000000, Math.log2(10)));
+    upgrades[8].getDescription = function(amount) { return "u9=" + getUpgradeValue(8, upgrades[8].level + amount).toString(0); };
+    upgrades[8].getInfo = function(amount) { return "u9=" + getUpgradeValue(8, upgrades[8].level + amount).toString(0); };
+    upgrades[9] = theory.createUpgrade(9, currency, new ExponentialCost(10000000000, Math.log2(11)));
+    upgrades[9].getDescription = function(amount) { return "u10=" + getUpgradeValue(9, upgrades[9].level + amount).toString(0); };
+    upgrades[9].getInfo = function(amount) { return "u10=" + getUpgradeValue(9, upgrades[9].level + amount).toString(0); };
+    upgrades[10] = theory.createUpgrade(10, currency, new ExponentialCost(100000000000, Math.log2(12)));
+    upgrades[10].getDescription = function(amount) { return "u11=" + getUpgradeValue(10, upgrades[10].level + amount).toString(0); };
+    upgrades[10].getInfo = function(amount) { return "u11=" + getUpgradeValue(10, upgrades[10].level + amount).toString(0); };
+    upgrades[11] = theory.createUpgrade(11, currency, new ExponentialCost(1000000000000, Math.log2(13)));
+    upgrades[11].getDescription = function(amount) { return "u12=" + getUpgradeValue(11, upgrades[11].level + amount).toString(0); };
+    upgrades[11].getInfo = function(amount) { return "u12=" + getUpgradeValue(11, upgrades[11].level + amount).toString(0); };
+    rho = BigNumber.ONE;
+    sigma = BigNumber.ONE;
+    delta = BigNumber.ONE;
+    lambdaVar = BigNumber.ONE;
+    omega = BigNumber.ONE;
+    psi = BigNumber.ONE;
+    theta = BigNumber.ONE;
+    zeta = BigNumber.ONE;
+    tau429 = BigNumber.ZERO;
 }
-function tick(elapsed, multiplier) {
-    var dt = elapsed * multiplier;
-    var complexity = BigNumber.fromNumber(Math.max(1, Math.floor(Math.log10(dt + 1) + 1)));
-    var aggregate = BigNumber.ONE;
-    for (var i = 0; i < variables.length; i++) {
-        var v = variables[i];
-        var growth = BigNumber.fromNumber(Math.pow(1.0001 + i*0.00001, dt));
-        v.value = v.value.add(growth);
-        aggregate = aggregate.mul(v.value.add(BigNumber.ONE));
-    }
-    var derivativeApprox = finiteDerivativeApproximation(dt, aggregate);
-    var multidimensionalTerm = multidimensionalCollatzTransform(aggregate, derivativeApprox, dt);
-    rho.value = rho.value.add(multidimensionalTerm);
-    computeTau429();
+
+function getUpgradeValue(index, level) {
+    var lv = Math.max(0, Math.floor(level));
+    if (index == 0) return BigNumber.from(lv + 1);
+    if (index == 1) return BigNumber.from(2).pow(lv);
+    if (index == 2) return BigNumber.from(3).pow(lv);
+    if (index == 3) return BigNumber.from(lv + 1).pow(2);
+    if (index == 4) return BigNumber.from(2).pow(lv);
+    if (index == 5) return BigNumber.from(3).pow(lv);
+    if (index == 6) return BigNumber.from(lv + 1).pow(2);
+    if (index == 7) return BigNumber.from(2).pow(lv);
+    if (index == 8) return BigNumber.from(3).pow(lv);
+    if (index == 9) return BigNumber.from(lv + 1).pow(2);
+    if (index == 10) return BigNumber.from(2).pow(lv);
+    if (index == 11) return BigNumber.from(3).pow(lv);
+    return BigNumber.from(1);
 }
-function finiteDerivativeApproximation(dt, x) {
-    var h = Math.max(1e-6, Math.min(1e-1, dt/1000));
-    var xp = approximateFlow(x, h);
-    var xm = approximateFlow(x, -h);
-    var num = xp.sub(xm);
-    var den = BigNumber.fromNumber(2*h);
-    return num.div(den);
+
+function f1(x) {
+    return BigNumber.from(Math.log10(x.toNumber() + 1)).mul(BigNumber.from(2));
 }
-function approximateFlow(x, h) {
-    var res = x;
-    if (h > 0) {
-        res = res.mul(BigNumber.fromNumber(1 + Math.log10(1 + h)));
-    } else {
-        res = res.div(BigNumber.fromNumber(1 + Math.log10(1 - h)));
-    }
-    return res;
+function f2(x) {
+    return x.pow(BigNumber.from(1.5)).add(BigNumber.from(3));
 }
-function multidimensionalCollatzTransform(A, D, dt) {
-    var sum = BigNumber.ZERO;
-    var sign = 1;
-    for (var k = 1; k <= 7; k++) {
-        var exponent = BigNumber.fromNumber(k).mul(D.abs().add(BigNumber.fromNumber(1)).pow(k));
-        var term = A.add(BigNumber.fromNumber(k)).pow(exponent.toNumber()/Math.max(1, k));
-        if (k % 2 === 0) sign = -1; else sign = 1;
-        sum = sum.add(term.mul(BigNumber.fromNumber(sign)));
-    }
-    var fractalCompression = fractalIntegralCompression(A, D, dt);
-    return sum.add(fractalCompression);
+function f3(x, y) {
+    return BigNumber.from(Math.log10(x.toNumber() + 1)).add(BigNumber.from(Math.log10(y.toNumber() + 1)));
 }
-function fractalIntegralCompression(A, D, dt) {
-    var result = BigNumber.ZERO;
-    var depth = Math.min(12, Math.max(3, Math.floor(Math.log10(dt+10))));
-    var base = A.add(D.abs().add(BigNumber.ONE));
-    for (var j = 1; j <= depth; j++) {
-        var layer = base.pow(BigNumber.fromNumber(1 + j*0.1));
-        layer = layer.div(BigNumber.fromNumber(1 + Math.pow(j, 0.8)));
-        result = result.add(layer);
-    }
-    return result.div(BigNumber.fromNumber(depth));
+function f4(x, y, z) {
+    return x.mul(y).add(y.mul(z)).add(z.mul(x));
 }
-function computeTau429() {
-    var pow50 = rho.value.pow(BigNumber.fromNumber(50));
-    if (pow50.gt(tau_429)) tau_429 = pow50;
+function f5(x) {
+    return BigNumber.ONE.div(x.add(BigNumber.ONE));
 }
-function getPrimaryEquation() {
-    var s = "";
-    s += "ρ = ";
-    s += "(" + deepLaTeXExpression() + ")";
+function f6(x) {
+    return x.add(BigNumber.from(5)).pow(BigNumber.from(0.5));
+}
+function f7(x, y) {
+    return BigNumber.from(Math.log10(x.toNumber() + 1)).sub(BigNumber.from(Math.log10(y.toNumber() + 1)));
+}
+function f8(x, y) {
+    return x.mul(BigNumber.from(Math.log10(y.toNumber() + 1)));
+}
+function f9(x) {
+    return BigNumber.from(Math.exp(Math.min(20, x.toNumber())));
+}
+function f10(x) {
+    var s = BigNumber.ZERO;
+    for (var k = 1; k <= 5; k++) s = s.add(x.pow(BigNumber.from(k)).mul(BigNumber.from(1.0 / k)));
     return s;
 }
-function deepLaTeXExpression() {
-    var parts = [];
-    parts.push("\\sum_{k=1}^{7} (-1)^{k} \\left( A + k \\right)^{\\exp_k}");
-    parts.push("\\int_{0}^{\\infty} \\frac{d}{dt} \\left(\\lim_{n\\to\\infty} x_n \\right) dt");
-    parts.push("\\prod_{m=1}^{\\infty} \\left(1 + \\frac{D_m}{m!}\\right)");
-    parts.push("\\mathrm{Deriv}[\\xi](t)\\quad\\text{и\\ сложные\\ операторы}");
-    return parts.join(" + ");
+function f11(x, y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(Math.log10(x.toNumber() + 1)));
 }
-function getSecondaryEquation() {
-    return "\\tau_{429} = \\max(\\rho^{50})";
+function f12(x) {
+    return BigNumber.from(Math.sin(x.toNumber())).add(BigNumber.from(Math.exp(0.1 * x.toNumber())));
 }
-function getTertiaryEquation() {
-    return "\\text{0}^{0} \\to \\infty \\text{ (конвенция этой теории)}";
+function f13(x, y, z) {
+    return x.pow(BigNumber.from(3)).add(y.pow(BigNumber.from(2))).add(z);
 }
-function getPublicationMultiplier(rhoValue) {
-    var base = rhoValue.log10().add(BigNumber.fromNumber(1));
-    var mult = base.pow(BigNumber.fromNumber(0.25));
-    return mult;
+function f14(x) {
+    var n = Math.max(1, Math.floor(x.toNumber()));
+    var approx = Math.sqrt(2 * Math.PI * n) * Math.pow(n / Math.E, n);
+    return BigNumber.from(Math.min(1e300, approx));
 }
-function getPublicationMultiplierFormula() {
-    return "\\mu(p) = (\\log_{10}(\\rho) + 1)^{1/4}";
+function f15(x, y) {
+    return x.pow(BigNumber.from(2)).add(y.pow(BigNumber.from(2))).pow(BigNumber.from(0.5));
 }
-function getTau429Display() {
-    return tau429_display;
+function f16(x, y) {
+    return BigNumber.from(Math.sin(x.toNumber() + y.toNumber()));
 }
-function exportState() {
-    var state = {
-        rho: rho.value.toString(),
-        tau_429: tau_429.toString()
-    };
-    return JSON.stringify(state);
+function f17(x) {
+    return BigNumber.from(x.toNumber() / Math.log(x.toNumber() + 2));
 }
-function importState(s) {
-    var obj = JSON.parse(s);
-    if (obj.rho) rho.value = BigNumber.fromString(obj.rho);
-    if (obj.tau_429) tau_429 = BigNumber.fromString(obj.tau_429);
+function f18(x, y) {
+    return x.mul(BigNumber.from(0.6)).add(y.mul(BigNumber.from(0.4)));
 }
-function onReset() {
-    rho.value = BigNumber.ZERO;
-    tau_429 = BigNumber.ZERO;
-    for (var i = 0; i < variables.length; i++) variables[i].value = BigNumber.ZERO;
-}
-var __internal_counter = 0;
-function complexCountingProcedure(n) {
-    var acc = BigNumber.ONE;
-    for (var i = 1; i <= n; i++) {
-        acc = acc.mul(BigNumber.fromNumber(i).add(BigNumber.fromNumber(Math.log10(i+1))));
-        if (i % 7 === 0) acc = acc.add(BigNumber.fromNumber(Math.sqrt(i)));
-    }
-    return acc;
-}
-function derivativeOperatorSymbolic(formFunc, x) {
+function f19(x) {
     var h = 1e-6;
-    var fxh = formFunc(x + h);
-    var fx = formFunc(x);
-    var val = (fxh - fx)/h;
-    return val;
+    var xp = f1(x.add(BigNumber.from(h)));
+    var xm = f1(x.sub(BigNumber.from(h)));
+    return xp.sub(xm).div(BigNumber.from(2 * h));
 }
-function symbolicCollatzIterator(seed, steps) {
-    var s = BigNumber.fromNumber(seed);
-    for (var i = 0; i < steps; i++) {
-        if (s.mod(BigNumber.fromNumber(2)).eq(BigNumber.ZERO)) s = s.div(BigNumber.fromNumber(2)); else s = s.mul(BigNumber.fromNumber(3)).add(BigNumber.fromNumber(1));
-        s = s.add(BigNumber.fromNumber(Math.log10(i+2)));
+function f20(x, y, z) {
+    return BigNumber.from(Math.log10(x.toNumber() + y.toNumber() + 1)).mul(z.pow(BigNumber.from(0.3)));
+}
+function f21(x) {
+    return x.mul(x).add(BigNumber.from(Math.log10(x.toNumber() + 2)));
+}
+function f22(x, y) {
+    return x.add(y).pow(BigNumber.from(0.75));
+}
+function f23(x) {
+    return BigNumber.from(Math.max(1, Math.log(x.toNumber()+2)));
+}
+function f24(x, y) {
+    return x.mul(y).div(x.add(y).add(BigNumber.ONE));
+}
+function f25(x) {
+    return x.pow(BigNumber.from(0.25)).add(BigNumber.from(1));
+}
+function f26(x,y){
+    return x.add(BigNumber.from(Math.sqrt(y.toNumber()+1)));
+}
+function f27(x){
+    return BigNumber.from(Math.log10(1 + Math.abs(x.toNumber()))).add(BigNumber.from(0.1));
+}
+function f28(x,y){
+    return x.pow(BigNumber.from(2)).sub(y);
+}
+function f29(x){
+    return BigNumber.from(Math.tanh(x.toNumber()));
+}
+function f30(x,y,z){
+    return x.add(y).add(z).div(BigNumber.from(3));
+}
+
+function helper1(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(2)));
+}
+function helper2(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+2)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper3(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(4)));
+}
+function helper4(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 4)).add(BigNumber.from(5));
+}
+function helper5(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper6(x) {
+    return x.add(BigNumber.from(7)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper7(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
     }
-    return s;
+    return s.add(BigNumber.from(n));
 }
-function multiscaleLimitReducer(sequence) {
-    var lim = BigNumber.ZERO;
-    for (var i = 0; i < sequence.length; i++) {
-        lim = lim.add(sequence[i].div(BigNumber.fromNumber(i+1)));
+function helper8(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(3)));
+}
+function helper9(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+9)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper10(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(11)));
+}
+function helper11(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 11)).add(BigNumber.from(5));
+}
+function helper12(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper13(x) {
+    return x.add(BigNumber.from(14)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper14(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
     }
-    return lim;
+    return s.add(BigNumber.from(n));
 }
-function operatorInfinityConvention(x) {
-    if (x.eq(BigNumber.ZERO)) return BigNumber.POSITIVE_INFINITY || BigNumber.fromString("1e9999");
-    return x.pow(x);
+function helper15(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(1)));
 }
-function hyperCountTransform(x, levels) {
-    var y = x;
-    for (var i = 1; i <= levels; i++) {
-        y = y.mul(BigNumber.fromNumber(1 + 1/(i+1))).add(BigNumber.fromNumber(Math.pow(i, 0.5)));
+function helper16(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+3)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper17(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(7)));
+}
+function helper18(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 18)).add(BigNumber.from(5));
+}
+function helper19(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper20(x) {
+    return x.add(BigNumber.from(4)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper21(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
     }
-    return y;
+    return s.add(BigNumber.from(n));
 }
-function computeComplexStateSignature(seed) {
-    var s = BigNumber.fromNumber(seed);
-    s = s.mul(complexCountingProcedure(128));
-    s = s.add(symbolicCollatzIterator(seed, 64));
-    s = hyperCountTransform(s, 16);
-    return s;
+function helper22(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(2)));
 }
-function metaDerivativeReductionPolynomial(x, degree) {
-    var p = BigNumber.ZERO;
-    for (var k = 0; k <= degree; k++) {
-        p = p.add(x.pow(BigNumber.fromNumber(k)).mul(BigNumber.fromNumber(1/(k+1))));
+function helper23(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+10)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper24(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(3)));
+}
+function helper25(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 5)).add(BigNumber.from(5));
+}
+function helper26(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper27(x) {
+    return x.add(BigNumber.from(11)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper28(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
     }
-    return p;
+    return s.add(BigNumber.from(n));
 }
-function nestedLimitComposition(N) {
-    var acc = BigNumber.ONE;
-    for (var i = 1; i <= N; i++) {
-        acc = acc.mul(BigNumber.fromNumber(Math.log10(i+10)));
+function helper29(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(3)));
+}
+function helper30(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+4)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper31(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(10)));
+}
+function helper32(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 12)).add(BigNumber.from(5));
+}
+function helper33(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper34(x) {
+    return x.add(BigNumber.from(1)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper35(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 5;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper36(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(1)));
+}
+function helper37(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+11)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper38(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(6)));
+}
+function helper39(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 19)).add(BigNumber.from(5));
+}
+function helper40(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper41(x) {
+    return x.add(BigNumber.from(8)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper42(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 2;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper43(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(2)));
+}
+function helper44(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+5)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper45(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(2)));
+}
+function helper46(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 6)).add(BigNumber.from(5));
+}
+function helper47(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper48(x) {
+    return x.add(BigNumber.from(15)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper49(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 9;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper50(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(3)));
+}
+function helper51(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+12)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper52(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(9)));
+}
+function helper53(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 13)).add(BigNumber.from(5));
+}
+function helper54(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper55(x) {
+    return x.add(BigNumber.from(5)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper56(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 6;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper57(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(1)));
+}
+function helper58(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+6)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper59(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(5)));
+}
+function helper60(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 0)).add(BigNumber.from(5));
+}
+function helper61(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper62(x) {
+    return x.add(BigNumber.from(12)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper63(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 3;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper64(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(2)));
+}
+function helper65(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+0)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper66(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(1)));
+}
+function helper67(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 7)).add(BigNumber.from(5));
+}
+function helper68(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper69(x) {
+    return x.add(BigNumber.from(2)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper70(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 0;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper71(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(3)));
+}
+function helper72(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+7)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper73(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(8)));
+}
+function helper74(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 14)).add(BigNumber.from(5));
+}
+function helper75(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper76(x) {
+    return x.add(BigNumber.from(9)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper77(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper78(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(1)));
+}
+function helper79(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+1)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper80(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(4)));
+}
+function helper81(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 1)).add(BigNumber.from(5));
+}
+function helper82(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper83(x) {
+    return x.add(BigNumber.from(16)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper84(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper85(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(2)));
+}
+function helper86(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+8)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper87(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(11)));
+}
+function helper88(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 8)).add(BigNumber.from(5));
+}
+function helper89(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper90(x) {
+    return x.add(BigNumber.from(6)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper91(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper92(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(3)));
+}
+function helper93(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+2)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper94(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(7)));
+}
+function helper95(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 15)).add(BigNumber.from(5));
+}
+function helper96(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper97(x) {
+    return x.add(BigNumber.from(13)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper98(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper99(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(1)));
+}
+function helper100(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+9)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper101(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(3)));
+}
+function helper102(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 2)).add(BigNumber.from(5));
+}
+function helper103(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper104(x) {
+    return x.add(BigNumber.from(3)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper105(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 5;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper106(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(2)));
+}
+function helper107(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+3)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper108(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(10)));
+}
+function helper109(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 9)).add(BigNumber.from(5));
+}
+function helper110(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper111(x) {
+    return x.add(BigNumber.from(10)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper112(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 2;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper113(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(3)));
+}
+function helper114(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+10)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper115(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(6)));
+}
+function helper116(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 16)).add(BigNumber.from(5));
+}
+function helper117(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper118(x) {
+    return x.add(BigNumber.from(17)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper119(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 9;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper120(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(1)));
+}
+function helper121(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+4)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper122(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(2)));
+}
+function helper123(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 3)).add(BigNumber.from(5));
+}
+function helper124(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper125(x) {
+    return x.add(BigNumber.from(7)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper126(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 6;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper127(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(2)));
+}
+function helper128(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+11)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper129(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(9)));
+}
+function helper130(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 10)).add(BigNumber.from(5));
+}
+function helper131(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper132(x) {
+    return x.add(BigNumber.from(14)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper133(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 3;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper134(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(3)));
+}
+function helper135(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+5)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper136(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(5)));
+}
+function helper137(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 17)).add(BigNumber.from(5));
+}
+function helper138(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper139(x) {
+    return x.add(BigNumber.from(4)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper140(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 0;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper141(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(1)));
+}
+function helper142(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+12)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper143(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(1)));
+}
+function helper144(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 4)).add(BigNumber.from(5));
+}
+function helper145(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper146(x) {
+    return x.add(BigNumber.from(11)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper147(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper148(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(2)));
+}
+function helper149(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+6)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper150(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(8)));
+}
+function helper151(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 11)).add(BigNumber.from(5));
+}
+function helper152(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper153(x) {
+    return x.add(BigNumber.from(1)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper154(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper155(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(3)));
+}
+function helper156(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+0)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper157(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(4)));
+}
+function helper158(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 18)).add(BigNumber.from(5));
+}
+function helper159(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper160(x) {
+    return x.add(BigNumber.from(8)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper161(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper162(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(1)));
+}
+function helper163(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+7)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper164(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(11)));
+}
+function helper165(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 5)).add(BigNumber.from(5));
+}
+function helper166(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper167(x) {
+    return x.add(BigNumber.from(15)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper168(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper169(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(2)));
+}
+function helper170(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+1)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper171(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(7)));
+}
+function helper172(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 12)).add(BigNumber.from(5));
+}
+function helper173(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper174(x) {
+    return x.add(BigNumber.from(5)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper175(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 5;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper176(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(3)));
+}
+function helper177(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+8)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper178(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(3)));
+}
+function helper179(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 19)).add(BigNumber.from(5));
+}
+function helper180(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper181(x) {
+    return x.add(BigNumber.from(12)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper182(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 2;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper183(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(1)));
+}
+function helper184(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+2)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper185(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(10)));
+}
+function helper186(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 6)).add(BigNumber.from(5));
+}
+function helper187(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper188(x) {
+    return x.add(BigNumber.from(2)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper189(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 9;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper190(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(2)));
+}
+function helper191(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+9)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper192(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(6)));
+}
+function helper193(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 13)).add(BigNumber.from(5));
+}
+function helper194(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper195(x) {
+    return x.add(BigNumber.from(9)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper196(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 6;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper197(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(3)));
+}
+function helper198(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+3)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper199(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(2)));
+}
+function helper200(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 0)).add(BigNumber.from(5));
+}
+function helper201(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper202(x) {
+    return x.add(BigNumber.from(16)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper203(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 3;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper204(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(1)));
+}
+function helper205(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+10)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper206(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(9)));
+}
+function helper207(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 7)).add(BigNumber.from(5));
+}
+function helper208(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper209(x) {
+    return x.add(BigNumber.from(6)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper210(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 0;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper211(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(2)));
+}
+function helper212(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+4)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper213(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(5)));
+}
+function helper214(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 14)).add(BigNumber.from(5));
+}
+function helper215(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper216(x) {
+    return x.add(BigNumber.from(13)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper217(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper218(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(3)));
+}
+function helper219(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+11)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper220(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(1)));
+}
+function helper221(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 1)).add(BigNumber.from(5));
+}
+function helper222(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper223(x) {
+    return x.add(BigNumber.from(3)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper224(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper225(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(1)));
+}
+function helper226(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+5)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper227(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(8)));
+}
+function helper228(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 8)).add(BigNumber.from(5));
+}
+function helper229(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper230(x) {
+    return x.add(BigNumber.from(10)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper231(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper232(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(2)));
+}
+function helper233(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+12)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper234(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(4)));
+}
+function helper235(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 15)).add(BigNumber.from(5));
+}
+function helper236(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper237(x) {
+    return x.add(BigNumber.from(17)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper238(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper239(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(3)));
+}
+function helper240(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+6)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper241(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(11)));
+}
+function helper242(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 2)).add(BigNumber.from(5));
+}
+function helper243(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper244(x) {
+    return x.add(BigNumber.from(7)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper245(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 5;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper246(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(1)));
+}
+function helper247(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+0)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper248(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(7)));
+}
+function helper249(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 9)).add(BigNumber.from(5));
+}
+function helper250(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper251(x) {
+    return x.add(BigNumber.from(14)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper252(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 2;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper253(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(2)));
+}
+function helper254(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+7)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper255(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(3)));
+}
+function helper256(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 16)).add(BigNumber.from(5));
+}
+function helper257(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper258(x) {
+    return x.add(BigNumber.from(4)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper259(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 9;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper260(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(3)));
+}
+function helper261(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+1)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper262(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(10)));
+}
+function helper263(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 3)).add(BigNumber.from(5));
+}
+function helper264(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper265(x) {
+    return x.add(BigNumber.from(11)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper266(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 6;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper267(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(1)));
+}
+function helper268(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+8)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper269(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(6)));
+}
+function helper270(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 10)).add(BigNumber.from(5));
+}
+function helper271(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper272(x) {
+    return x.add(BigNumber.from(1)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper273(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 3;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper274(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(2)));
+}
+function helper275(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+2)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper276(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(2)));
+}
+function helper277(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 17)).add(BigNumber.from(5));
+}
+function helper278(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper279(x) {
+    return x.add(BigNumber.from(8)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper280(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 0;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper281(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(3)));
+}
+function helper282(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+9)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper283(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(9)));
+}
+function helper284(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 4)).add(BigNumber.from(5));
+}
+function helper285(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper286(x) {
+    return x.add(BigNumber.from(15)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper287(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper288(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(1)));
+}
+function helper289(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+3)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper290(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(5)));
+}
+function helper291(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 11)).add(BigNumber.from(5));
+}
+function helper292(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper293(x) {
+    return x.add(BigNumber.from(5)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper294(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper295(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(2)));
+}
+function helper296(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+10)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper297(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(1)));
+}
+function helper298(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 18)).add(BigNumber.from(5));
+}
+function helper299(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper300(x) {
+    return x.add(BigNumber.from(12)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper301(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper302(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(3)));
+}
+function helper303(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+4)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper304(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(8)));
+}
+function helper305(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 5)).add(BigNumber.from(5));
+}
+function helper306(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper307(x) {
+    return x.add(BigNumber.from(2)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper308(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper309(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(1)));
+}
+function helper310(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+11)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper311(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(4)));
+}
+function helper312(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 12)).add(BigNumber.from(5));
+}
+function helper313(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper314(x) {
+    return x.add(BigNumber.from(9)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper315(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 5;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper316(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(2)));
+}
+function helper317(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+5)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper318(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(11)));
+}
+function helper319(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 19)).add(BigNumber.from(5));
+}
+function helper320(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper321(x) {
+    return x.add(BigNumber.from(16)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper322(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 2;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper323(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(3)));
+}
+function helper324(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+12)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper325(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(7)));
+}
+function helper326(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 6)).add(BigNumber.from(5));
+}
+function helper327(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper328(x) {
+    return x.add(BigNumber.from(6)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper329(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 9;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper330(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(1)));
+}
+function helper331(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+6)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper332(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(3)));
+}
+function helper333(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 13)).add(BigNumber.from(5));
+}
+function helper334(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper335(x) {
+    return x.add(BigNumber.from(13)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper336(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 6;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper337(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(2)));
+}
+function helper338(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+0)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper339(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(10)));
+}
+function helper340(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 0)).add(BigNumber.from(5));
+}
+function helper341(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper342(x) {
+    return x.add(BigNumber.from(3)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper343(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 3;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper344(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(3)));
+}
+function helper345(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+7)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper346(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(6)));
+}
+function helper347(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 7)).add(BigNumber.from(5));
+}
+function helper348(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper349(x) {
+    return x.add(BigNumber.from(10)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper350(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 0;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper351(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(1)));
+}
+function helper352(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+1)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper353(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(2)));
+}
+function helper354(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 14)).add(BigNumber.from(5));
+}
+function helper355(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper356(x) {
+    return x.add(BigNumber.from(17)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper357(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper358(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(2)));
+}
+function helper359(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+8)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper360(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(9)));
+}
+function helper361(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 1)).add(BigNumber.from(5));
+}
+function helper362(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper363(x) {
+    return x.add(BigNumber.from(7)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper364(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper365(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(3)));
+}
+function helper366(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+2)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper367(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(5)));
+}
+function helper368(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 8)).add(BigNumber.from(5));
+}
+function helper369(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper370(x) {
+    return x.add(BigNumber.from(14)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper371(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper372(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(1)));
+}
+function helper373(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+9)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper374(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(1)));
+}
+function helper375(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 15)).add(BigNumber.from(5));
+}
+function helper376(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper377(x) {
+    return x.add(BigNumber.from(4)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper378(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper379(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(2)));
+}
+function helper380(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+3)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper381(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(8)));
+}
+function helper382(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 2)).add(BigNumber.from(5));
+}
+function helper383(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper384(x) {
+    return x.add(BigNumber.from(11)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper385(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 5;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper386(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(3)));
+}
+function helper387(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+10)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper388(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(4)));
+}
+function helper389(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 9)).add(BigNumber.from(5));
+}
+function helper390(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper391(x) {
+    return x.add(BigNumber.from(1)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper392(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 2;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper393(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(1)));
+}
+function helper394(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+4)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper395(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(11)));
+}
+function helper396(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 16)).add(BigNumber.from(5));
+}
+function helper397(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper398(x) {
+    return x.add(BigNumber.from(8)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper399(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 9;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper400(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(2)));
+}
+function helper401(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+11)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper402(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(7)));
+}
+function helper403(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 3)).add(BigNumber.from(5));
+}
+function helper404(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper405(x) {
+    return x.add(BigNumber.from(15)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper406(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 6;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper407(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(3)));
+}
+function helper408(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+5)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper409(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(3)));
+}
+function helper410(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 10)).add(BigNumber.from(5));
+}
+function helper411(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper412(x) {
+    return x.add(BigNumber.from(5)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper413(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 3;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper414(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(1)));
+}
+function helper415(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+12)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper416(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(10)));
+}
+function helper417(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 17)).add(BigNumber.from(5));
+}
+function helper418(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper419(x) {
+    return x.add(BigNumber.from(12)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper420(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 0;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper421(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(2)));
+}
+function helper422(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+6)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper423(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(6)));
+}
+function helper424(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 4)).add(BigNumber.from(5));
+}
+function helper425(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper426(x) {
+    return x.add(BigNumber.from(2)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper427(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper428(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(3)));
+}
+function helper429(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+0)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper430(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(2)));
+}
+function helper431(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 11)).add(BigNumber.from(5));
+}
+function helper432(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper433(x) {
+    return x.add(BigNumber.from(9)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper434(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper435(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(1)));
+}
+function helper436(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+7)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper437(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(9)));
+}
+function helper438(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 18)).add(BigNumber.from(5));
+}
+function helper439(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper440(x) {
+    return x.add(BigNumber.from(16)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper441(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper442(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(2)));
+}
+function helper443(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+1)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper444(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(5)));
+}
+function helper445(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 5)).add(BigNumber.from(5));
+}
+function helper446(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper447(x) {
+    return x.add(BigNumber.from(6)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper448(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper449(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(3)));
+}
+function helper450(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+8)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper451(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(1)));
+}
+function helper452(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 12)).add(BigNumber.from(5));
+}
+function helper453(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper454(x) {
+    return x.add(BigNumber.from(13)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper455(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 5;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper456(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(1)));
+}
+function helper457(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+2)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper458(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(8)));
+}
+function helper459(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 19)).add(BigNumber.from(5));
+}
+function helper460(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper461(x) {
+    return x.add(BigNumber.from(3)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper462(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 2;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper463(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(2)));
+}
+function helper464(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+9)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper465(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(4)));
+}
+function helper466(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 6)).add(BigNumber.from(5));
+}
+function helper467(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper468(x) {
+    return x.add(BigNumber.from(10)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper469(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 9;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper470(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(3)));
+}
+function helper471(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+3)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper472(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(11)));
+}
+function helper473(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 13)).add(BigNumber.from(5));
+}
+function helper474(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper475(x) {
+    return x.add(BigNumber.from(17)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper476(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 6;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper477(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(1)));
+}
+function helper478(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+10)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper479(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(7)));
+}
+function helper480(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 0)).add(BigNumber.from(5));
+}
+function helper481(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper482(x) {
+    return x.add(BigNumber.from(7)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper483(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 3;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper484(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(2)));
+}
+function helper485(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+4)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper486(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(3)));
+}
+function helper487(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 7)).add(BigNumber.from(5));
+}
+function helper488(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper489(x) {
+    return x.add(BigNumber.from(14)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper490(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 0;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper491(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(3)));
+}
+function helper492(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+11)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper493(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(10)));
+}
+function helper494(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 14)).add(BigNumber.from(5));
+}
+function helper495(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper496(x) {
+    return x.add(BigNumber.from(4)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper497(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper498(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(1)));
+}
+function helper499(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+5)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper500(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(6)));
+}
+function helper501(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 1)).add(BigNumber.from(5));
+}
+function helper502(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper503(x) {
+    return x.add(BigNumber.from(11)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper504(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper505(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(2)));
+}
+function helper506(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+12)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper507(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(2)));
+}
+function helper508(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 8)).add(BigNumber.from(5));
+}
+function helper509(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper510(x) {
+    return x.add(BigNumber.from(1)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper511(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper512(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(3)));
+}
+function helper513(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+6)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper514(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(9)));
+}
+function helper515(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 15)).add(BigNumber.from(5));
+}
+function helper516(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper517(x) {
+    return x.add(BigNumber.from(8)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper518(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper519(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(1)));
+}
+function helper520(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+0)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper521(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(5)));
+}
+function helper522(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 2)).add(BigNumber.from(5));
+}
+function helper523(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper524(x) {
+    return x.add(BigNumber.from(15)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper525(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 5;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper526(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(2)));
+}
+function helper527(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+7)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper528(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(1)));
+}
+function helper529(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 9)).add(BigNumber.from(5));
+}
+function helper530(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper531(x) {
+    return x.add(BigNumber.from(5)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper532(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 2;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper533(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(3)));
+}
+function helper534(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+1)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper535(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(8)));
+}
+function helper536(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 16)).add(BigNumber.from(5));
+}
+function helper537(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper538(x) {
+    return x.add(BigNumber.from(12)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper539(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 9;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper540(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(1)));
+}
+function helper541(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+8)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper542(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(4)));
+}
+function helper543(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 3)).add(BigNumber.from(5));
+}
+function helper544(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper545(x) {
+    return x.add(BigNumber.from(2)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper546(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 6;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper547(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(2)));
+}
+function helper548(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+2)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper549(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(11)));
+}
+function helper550(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 10)).add(BigNumber.from(5));
+}
+function helper551(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper552(x) {
+    return x.add(BigNumber.from(9)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper553(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 3;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper554(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(3)));
+}
+function helper555(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+9)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper556(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(7)));
+}
+function helper557(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 17)).add(BigNumber.from(5));
+}
+function helper558(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper559(x) {
+    return x.add(BigNumber.from(16)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper560(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 0;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper561(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(1)));
+}
+function helper562(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+3)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper563(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(3)));
+}
+function helper564(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 4)).add(BigNumber.from(5));
+}
+function helper565(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper566(x) {
+    return x.add(BigNumber.from(6)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper567(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper568(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(2)));
+}
+function helper569(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+10)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper570(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(10)));
+}
+function helper571(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 11)).add(BigNumber.from(5));
+}
+function helper572(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper573(x) {
+    return x.add(BigNumber.from(13)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper574(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper575(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(3)));
+}
+function helper576(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+4)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper577(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(6)));
+}
+function helper578(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 18)).add(BigNumber.from(5));
+}
+function helper579(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper580(x) {
+    return x.add(BigNumber.from(3)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper581(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper582(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(1)));
+}
+function helper583(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+11)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper584(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(2)));
+}
+function helper585(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 5)).add(BigNumber.from(5));
+}
+function helper586(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper587(x) {
+    return x.add(BigNumber.from(10)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper588(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper589(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(2)));
+}
+function helper590(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+5)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper591(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(9)));
+}
+function helper592(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 12)).add(BigNumber.from(5));
+}
+function helper593(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper594(x) {
+    return x.add(BigNumber.from(17)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper595(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 5;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper596(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(3)));
+}
+function helper597(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+12)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper598(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(5)));
+}
+function helper599(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 19)).add(BigNumber.from(5));
+}
+function helper600(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper601(x) {
+    return x.add(BigNumber.from(7)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper602(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 2;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper603(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(1)));
+}
+function helper604(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+6)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper605(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(1)));
+}
+function helper606(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 6)).add(BigNumber.from(5));
+}
+function helper607(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper608(x) {
+    return x.add(BigNumber.from(14)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper609(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 9;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper610(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(2)));
+}
+function helper611(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+0)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper612(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(8)));
+}
+function helper613(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 13)).add(BigNumber.from(5));
+}
+function helper614(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper615(x) {
+    return x.add(BigNumber.from(4)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper616(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 6;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper617(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(3)));
+}
+function helper618(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+7)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper619(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(4)));
+}
+function helper620(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 0)).add(BigNumber.from(5));
+}
+function helper621(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper622(x) {
+    return x.add(BigNumber.from(11)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper623(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 3;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper624(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(1)));
+}
+function helper625(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+1)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper626(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(11)));
+}
+function helper627(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 7)).add(BigNumber.from(5));
+}
+function helper628(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper629(x) {
+    return x.add(BigNumber.from(1)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper630(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 0;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper631(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(2)));
+}
+function helper632(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+8)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper633(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(7)));
+}
+function helper634(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 14)).add(BigNumber.from(5));
+}
+function helper635(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper636(x) {
+    return x.add(BigNumber.from(8)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper637(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper638(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(3)));
+}
+function helper639(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+2)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper640(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(3)));
+}
+function helper641(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 1)).add(BigNumber.from(5));
+}
+function helper642(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper643(x) {
+    return x.add(BigNumber.from(15)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper644(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper645(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(1)));
+}
+function helper646(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+9)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper647(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(10)));
+}
+function helper648(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 8)).add(BigNumber.from(5));
+}
+function helper649(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper650(x) {
+    return x.add(BigNumber.from(5)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper651(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper652(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(2)));
+}
+function helper653(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+3)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper654(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(6)));
+}
+function helper655(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 15)).add(BigNumber.from(5));
+}
+function helper656(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper657(x) {
+    return x.add(BigNumber.from(12)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper658(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper659(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(3)));
+}
+function helper660(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+10)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper661(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(2)));
+}
+function helper662(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 2)).add(BigNumber.from(5));
+}
+function helper663(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper664(x) {
+    return x.add(BigNumber.from(2)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper665(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 5;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper666(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(1)));
+}
+function helper667(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+4)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper668(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(9)));
+}
+function helper669(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 9)).add(BigNumber.from(5));
+}
+function helper670(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper671(x) {
+    return x.add(BigNumber.from(9)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper672(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 2;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper673(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(2)));
+}
+function helper674(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+11)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper675(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(5)));
+}
+function helper676(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 16)).add(BigNumber.from(5));
+}
+function helper677(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper678(x) {
+    return x.add(BigNumber.from(16)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper679(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 9;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper680(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(3)));
+}
+function helper681(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+5)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper682(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(1)));
+}
+function helper683(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 3)).add(BigNumber.from(5));
+}
+function helper684(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper685(x) {
+    return x.add(BigNumber.from(6)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper686(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 6;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper687(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(1)));
+}
+function helper688(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+12)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper689(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(8)));
+}
+function helper690(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 10)).add(BigNumber.from(5));
+}
+function helper691(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper692(x) {
+    return x.add(BigNumber.from(13)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper693(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 3;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper694(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(2)));
+}
+function helper695(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+6)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper696(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(4)));
+}
+function helper697(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 17)).add(BigNumber.from(5));
+}
+function helper698(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper699(x) {
+    return x.add(BigNumber.from(3)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper700(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 0;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper701(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(3)));
+}
+function helper702(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+0)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper703(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(11)));
+}
+function helper704(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 4)).add(BigNumber.from(5));
+}
+function helper705(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper706(x) {
+    return x.add(BigNumber.from(10)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper707(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper708(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(1)));
+}
+function helper709(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+7)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper710(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(7)));
+}
+function helper711(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 11)).add(BigNumber.from(5));
+}
+function helper712(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper713(x) {
+    return x.add(BigNumber.from(17)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper714(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper715(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(2)));
+}
+function helper716(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+1)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper717(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(3)));
+}
+function helper718(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 18)).add(BigNumber.from(5));
+}
+function helper719(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper720(x) {
+    return x.add(BigNumber.from(7)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper721(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper722(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(3)));
+}
+function helper723(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+8)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper724(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(10)));
+}
+function helper725(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 5)).add(BigNumber.from(5));
+}
+function helper726(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper727(x) {
+    return x.add(BigNumber.from(14)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper728(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper729(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(1)));
+}
+function helper730(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+2)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper731(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(6)));
+}
+function helper732(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 12)).add(BigNumber.from(5));
+}
+function helper733(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper734(x) {
+    return x.add(BigNumber.from(4)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper735(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 5;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper736(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(2)));
+}
+function helper737(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+9)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper738(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(2)));
+}
+function helper739(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 19)).add(BigNumber.from(5));
+}
+function helper740(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(3));
+}
+function helper741(x) {
+    return x.add(BigNumber.from(11)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper742(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 2;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper743(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(3)));
+}
+function helper744(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+3)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper745(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(9)));
+}
+function helper746(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 6)).add(BigNumber.from(5));
+}
+function helper747(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(1));
+}
+function helper748(x) {
+    return x.add(BigNumber.from(1)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper749(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 9;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper750(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(1)));
+}
+function helper751(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+10)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper752(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(5)));
+}
+function helper753(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 13)).add(BigNumber.from(5));
+}
+function helper754(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(8));
+}
+function helper755(x) {
+    return x.add(BigNumber.from(8)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper756(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 6;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper757(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(2)));
+}
+function helper758(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+4)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper759(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(1)));
+}
+function helper760(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 0)).add(BigNumber.from(5));
+}
+function helper761(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(6));
+}
+function helper762(x) {
+    return x.add(BigNumber.from(15)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper763(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 3;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper764(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(3)));
+}
+function helper765(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+11)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper766(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(8)));
+}
+function helper767(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 7)).add(BigNumber.from(5));
+}
+function helper768(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(4));
+}
+function helper769(x) {
+    return x.add(BigNumber.from(5)).pow(BigNumber.from(1 + (4)/10));
+}
+function helper770(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 0;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper771(x,y) {
+    return x.mul(BigNumber.from(2)).add(y.mul(BigNumber.from(1)));
+}
+function helper772(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+5)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper773(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(4)));
+}
+function helper774(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 14)).add(BigNumber.from(5));
+}
+function helper775(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(2));
+}
+function helper776(x) {
+    return x.add(BigNumber.from(12)).pow(BigNumber.from(1 + (1)/10));
+}
+function helper777(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 7;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper778(x,y) {
+    return x.mul(BigNumber.from(4)).add(y.mul(BigNumber.from(2)));
+}
+function helper779(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+12)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper780(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(11)));
+}
+function helper781(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 1)).add(BigNumber.from(5));
+}
+function helper782(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(9));
+}
+function helper783(x) {
+    return x.add(BigNumber.from(2)).pow(BigNumber.from(1 + (3)/10));
+}
+function helper784(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 4;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper785(x,y) {
+    return x.mul(BigNumber.from(1)).add(y.mul(BigNumber.from(3)));
+}
+function helper786(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+6)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper787(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(7)));
+}
+function helper788(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 8)).add(BigNumber.from(5));
+}
+function helper789(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(7));
+}
+function helper790(x) {
+    return x.add(BigNumber.from(9)).pow(BigNumber.from(1 + (0)/10));
+}
+function helper791(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 1;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper792(x,y) {
+    return x.mul(BigNumber.from(3)).add(y.mul(BigNumber.from(1)));
+}
+function helper793(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+0)).mul(x.pow(BigNumber.from(0.3)));
+}
+function helper794(x,y,z) {
+    return x.mul(y).add(z.mul(BigNumber.from(3)));
+}
+function helper795(x) {
+    return BigNumber.from(Math.sin(x.toNumber() + 15)).add(BigNumber.from(5));
+}
+function helper796(x,y) {
+    return x.div(y.add(BigNumber.ONE)).add(BigNumber.from(5));
+}
+function helper797(x) {
+    return x.add(BigNumber.from(16)).pow(BigNumber.from(1 + (2)/10));
+}
+function helper798(x) {
+    var n = Math.max(1, Math.floor(x.toNumber())) + 8;
+    var s = BigNumber.ZERO;
+    for (var i = 1; i <= 6; i++) {
+        s = s.add(x.pow(BigNumber.from(i)).mul(BigNumber.from(1.0/30)));
+    }
+    return s.add(BigNumber.from(n));
+}
+function helper799(x,y) {
+    return x.mul(BigNumber.from(5)).add(y.mul(BigNumber.from(2)));
+}
+function helper800(x) {
+    return BigNumber.from(Math.log10(x.toNumber()+1+7)).mul(x.pow(BigNumber.from(0.3)));
+}
+
+function heavyComputationCycle(seed) {
+    var acc = BigNumber.ZERO;
+    var s = BigNumber.from((seed % 100) + 1);
+    for (var i = 1; i <= 60; i++) {
+        acc = acc.add(helper14(s).mul(BigNumber.from(0.2)));
+        acc = acc.add(helper27(s).mul(BigNumber.from(0.30000000000000004)));
+        acc = acc.add(helper40(s).mul(BigNumber.from(0.4)));
+        acc = acc.add(helper53(s).mul(BigNumber.from(0.5)));
+        acc = acc.add(helper66(s, BigNumber.from(i)).mul(BigNumber.from(0.16666666666666666)));
+        acc = acc.add(helper79(s).mul(BigNumber.from(0.7)));
+        acc = acc.add(helper92(s).mul(BigNumber.from(0.1)));
+        acc = acc.add(helper105(s).mul(BigNumber.from(0.2)));
+        acc = acc.add(helper118(s).mul(BigNumber.from(0.30000000000000004)));
+        acc = acc.add(helper131(s, BigNumber.from(i)).mul(BigNumber.from(0.09090909090909091)));
+        acc = acc.add(helper144(s).mul(BigNumber.from(0.5)));
+        acc = acc.add(helper157(s).mul(BigNumber.from(0.6)));
+        acc = acc.add(helper170(s).mul(BigNumber.from(0.7)));
+        acc = acc.add(helper183(s).mul(BigNumber.from(0.1)));
+        acc = acc.add(helper196(s, BigNumber.from(i)).mul(BigNumber.from(0.0625)));
+        acc = acc.add(helper209(s).mul(BigNumber.from(0.30000000000000004)));
+        acc = acc.add(helper222(s).mul(BigNumber.from(0.4)));
+        acc = acc.add(helper235(s).mul(BigNumber.from(0.5)));
+        acc = acc.add(helper248(s).mul(BigNumber.from(0.6)));
+        acc = acc.add(helper261(s, BigNumber.from(i)).mul(BigNumber.from(0.047619047619047616)));
+        acc = acc.add(helper274(s).mul(BigNumber.from(0.1)));
+        acc = acc.add(helper287(s).mul(BigNumber.from(0.2)));
+        acc = acc.add(helper300(s).mul(BigNumber.from(0.30000000000000004)));
+        acc = acc.add(helper313(s).mul(BigNumber.from(0.4)));
+        acc = acc.add(helper326(s, BigNumber.from(i)).mul(BigNumber.from(0.038461538461538464)));
+        acc = acc.add(helper339(s).mul(BigNumber.from(0.6)));
+        acc = acc.add(helper352(s).mul(BigNumber.from(0.7)));
+        acc = acc.add(helper365(s).mul(BigNumber.from(0.1)));
+        acc = acc.add(helper378(s).mul(BigNumber.from(0.2)));
+        acc = acc.add(helper391(s, BigNumber.from(i)).mul(BigNumber.from(0.03225806451612903)));
+        acc = acc.add(helper404(s).mul(BigNumber.from(0.4)));
+        acc = acc.add(helper417(s).mul(BigNumber.from(0.5)));
+        acc = acc.add(helper430(s).mul(BigNumber.from(0.6)));
+        acc = acc.add(helper443(s).mul(BigNumber.from(0.7)));
+        acc = acc.add(helper456(s, BigNumber.from(i)).mul(BigNumber.from(0.027777777777777776)));
+        acc = acc.add(helper469(s).mul(BigNumber.from(0.2)));
+        acc = acc.add(helper482(s).mul(BigNumber.from(0.30000000000000004)));
+        acc = acc.add(helper495(s).mul(BigNumber.from(0.4)));
+        acc = acc.add(helper508(s).mul(BigNumber.from(0.5)));
+        acc = acc.add(helper521(s, BigNumber.from(i)).mul(BigNumber.from(0.024390243902439025)));
+        acc = acc.add(helper534(s).mul(BigNumber.from(0.7)));
+        acc = acc.add(helper547(s).mul(BigNumber.from(0.1)));
+        acc = acc.add(helper560(s).mul(BigNumber.from(0.2)));
+        acc = acc.add(helper573(s).mul(BigNumber.from(0.30000000000000004)));
+        acc = acc.add(helper586(s, BigNumber.from(i)).mul(BigNumber.from(0.021739130434782608)));
+        acc = acc.add(helper599(s).mul(BigNumber.from(0.5)));
+        acc = acc.add(helper612(s).mul(BigNumber.from(0.6)));
+        acc = acc.add(helper625(s).mul(BigNumber.from(0.7)));
+        acc = acc.add(helper638(s).mul(BigNumber.from(0.1)));
+        acc = acc.add(helper651(s, BigNumber.from(i)).mul(BigNumber.from(0.0196078431372549)));
+        acc = acc.add(helper664(s).mul(BigNumber.from(0.30000000000000004)));
+        acc = acc.add(helper677(s).mul(BigNumber.from(0.4)));
+        acc = acc.add(helper690(s).mul(BigNumber.from(0.5)));
+        acc = acc.add(helper703(s).mul(BigNumber.from(0.6)));
+        acc = acc.add(helper716(s, BigNumber.from(i)).mul(BigNumber.from(0.017857142857142856)));
+        acc = acc.add(helper729(s).mul(BigNumber.from(0.1)));
+        acc = acc.add(helper742(s).mul(BigNumber.from(0.2)));
+        acc = acc.add(helper755(s).mul(BigNumber.from(0.30000000000000004)));
+        acc = acc.add(helper768(s).mul(BigNumber.from(0.4)));
+        acc = acc.add(helper781(s, BigNumber.from(i)).mul(BigNumber.from(0.01639344262295082)));
+        s = s.add(BigNumber.from(1));
     }
     return acc;
 }
-function spectralAggregation(values) {
-    var res = BigNumber.ZERO;
-    for (var i = 0; i < values.length; i++) res = res.add(values[i].mul(BigNumber.fromNumber(i+1)));
-    return res.div(BigNumber.fromNumber(values.length || 1));
+
+function g1(x,y) {
+    return f4(x,y,BigNumber.from(2)).add(f21(x));
 }
-function generateMetaOperators(count) {
-    var ops = [];
-    for (var i = 1; i <= count; i++) ops.push(function(x){ return x.mul(BigNumber.fromNumber(i)).add(BigNumber.fromNumber(Math.sqrt(i))); });
-    return ops;
+function g2(x) {
+    return f9(x).add(BigNumber.from(3));
 }
-function evaluateInfiniteSeriesApproximation(terms) {
-    var s = BigNumber.ZERO;
-    for (var n = 1; n <= terms; n++) s = s.add(BigNumber.fromNumber(1).div(BigNumber.fromNumber(n).pow(BigNumber.fromNumber(1.5))));
-    return s;
+function g3(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
 }
-function setTau429ByMaxRhoPower() {
-    try {
-        var candidate = rho.value.pow(BigNumber.fromNumber(50));
-        if (candidate.gt(tau_429)) tau_429 = candidate;
-    } catch (e) {
-    }
+function g4(x) {
+    return f10(x).mul(BigNumber.from(5)).add(f2(x));
 }
-function getDisplayLines() {
-    var lines = [];
-    lines.push("Название: " + name);
-    lines.push("Описание: " + description);
-    lines.push("Основная формула: " + getPrimaryEquation());
-    lines.push("Специальное значение: " + getSecondaryEquation());
-    return lines;
+function g5(x,y) {
+    return f4(x,y,BigNumber.from(1)).add(f21(x));
 }
-function robustnessStressTest(iterations) {
-    var state = BigNumber.ONE;
-    for (var i = 0; i < iterations; i++) {
-        state = state.add(computeComplexStateSignature(i));
-        state = state.mul(BigNumber.fromNumber(1 + (i%3)));
-    }
-    return state;
+function g6(x) {
+    return f9(x).add(BigNumber.from(7));
 }
-function deepOperatorLoop(maxN) {
-    var s = BigNumber.ZERO;
-    for (var n = 1; n <= maxN; n++) s = s.add(metaDerivativeReductionPolynomial(BigNumber.fromNumber(n), 8));
-    return s;
+function g7(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
 }
-function produceLongChainSignature(length) {
-    var arr = [];
-    for (var i = 0; i < length; i++) arr.push(generateSignatureElement(i));
-    return spectralAggregation(arr);
+function g8(x) {
+    return f10(x).mul(BigNumber.from(9)).add(f2(x));
 }
-function generateSignatureElement(i) {
-    var x = BigNumber.fromNumber(i+1);
-    x = x.mul(BigNumber.fromNumber(Math.log10(i+2))).add(BigNumber.fromNumber(Math.sqrt(i+1)));
-    return x;
+function g9(x,y) {
+    return f4(x,y,BigNumber.from(5)).add(f21(x));
 }
-function computeComplexPolynomialValue(x, deg) {
-    var res = BigNumber.ZERO;
-    for (var d = 0; d <= deg; d++) res = res.add(x.pow(BigNumber.fromNumber(d)).mul(BigNumber.fromNumber(1/(d+1))));
-    return res;
+function g10(x) {
+    return f9(x).add(BigNumber.from(4));
 }
-var g1 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g2 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g3 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g4 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g5 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g6 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g7 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g8 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g9 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g10 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g11 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g12 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g13 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g14 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g15 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g16 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g17 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g18 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g19 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g20 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g21 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g22 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g23 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g24 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g25 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g26 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g27 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g28 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g29 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g30 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g31 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g32 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g33 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g34 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g35 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g36 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g37 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g38 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g39 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g40 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g41 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g42 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g43 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g44 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g45 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g46 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g47 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g48 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g49 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g50 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g51 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g52 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g53 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g54 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g55 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g56 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g57 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g58 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g59 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g60 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g61 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g62 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g63 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g64 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g65 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g66 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g67 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g68 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g69 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g70 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g71 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g72 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g73 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g74 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g75 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g76 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g77 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g78 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g79 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g80 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g81 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g82 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g83 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g84 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g85 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g86 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g87 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g88 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g89 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g90 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g91 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g92 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g93 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g94 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g95 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g96 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g97 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g98 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g99 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g100 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g101 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g102 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g103 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g104 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g105 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g106 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g107 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g108 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g109 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g110 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g111 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g112 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g113 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g114 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g115 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g116 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g117 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g118 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g119 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g120 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g121 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g122 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g123 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g124 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g125 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g126 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g127 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g128 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g129 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g130 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g131 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g132 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g133 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g134 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g135 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g136 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g137 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g138 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g139 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g140 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g141 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g142 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g143 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g144 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g145 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g146 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g147 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g148 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g149 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g150 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g151 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g152 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g153 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g154 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g155 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g156 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g157 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g158 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g159 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g160 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g161 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g162 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g163 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g164 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g165 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g166 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g167 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g168 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g169 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g170 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g171 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g172 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g173 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g174 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g175 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g176 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g177 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g178 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g179 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g180 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g181 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g182 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g183 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g184 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g185 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g186 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g187 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g188 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g189 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g190 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g191 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g192 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g193 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g194 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g195 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g196 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g197 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g198 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g199 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g200 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g201 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g202 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g203 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g204 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g205 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g206 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g207 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g208 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g209 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g210 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g211 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g212 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g213 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g214 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g215 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g216 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g217 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g218 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g219 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g220 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g221 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g222 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g223 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g224 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g225 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g226 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g227 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g228 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g229 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g230 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g231 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g232 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g233 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g234 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g235 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g236 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g237 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g238 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g239 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g240 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g241 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g242 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g243 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g244 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g245 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g246 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g247 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g248 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g249 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g250 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g251 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g252 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g253 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g254 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g255 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g256 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g257 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g258 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g259 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g260 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g261 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g262 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g263 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g264 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g265 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g266 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g267 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g268 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g269 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g270 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g271 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g272 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g273 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g274 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g275 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g276 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g277 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g278 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g279 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g280 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g281 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g282 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g283 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g284 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g285 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g286 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g287 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g288 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g289 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g290 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g291 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g292 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g293 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g294 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g295 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g296 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g297 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g298 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g299 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g300 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g301 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g302 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g303 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g304 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g305 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g306 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g307 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g308 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g309 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g310 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g311 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g312 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g313 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g314 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g315 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g316 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g317 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g318 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g319 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g320 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g321 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g322 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g323 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g324 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g325 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g326 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g327 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g328 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g329 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g330 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g331 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g332 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g333 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g334 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g335 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g336 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g337 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g338 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g339 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g340 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g341 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g342 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g343 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g344 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g345 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g346 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g347 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g348 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g349 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g350 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g351 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g352 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g353 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g354 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g355 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g356 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g357 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g358 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g359 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g360 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g361 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g362 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g363 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g364 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g365 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g366 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g367 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g368 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g369 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g370 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g371 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g372 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g373 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g374 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g375 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g376 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g377 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g378 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g379 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g380 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g381 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g382 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g383 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g384 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g385 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g386 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g387 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g388 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g389 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g390 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g391 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g392 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g393 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g394 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g395 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g396 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g397 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g398 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g399 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g400 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g401 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g402 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g403 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g404 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g405 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g406 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g407 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g408 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g409 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g410 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g411 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g412 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g413 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g414 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g415 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g416 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g417 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g418 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g419 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g420 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g421 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g422 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g423 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g424 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g425 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g426 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g427 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g428 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g429 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g430 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g431 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g432 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g433 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g434 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g435 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g436 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g437 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g438 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g439 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g440 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g441 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g442 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g443 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g444 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g445 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g446 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g447 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g448 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g449 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g450 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g451 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g452 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g453 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g454 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g455 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g456 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g457 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g458 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g459 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g460 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g461 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g462 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g463 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g464 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g465 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g466 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g467 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g468 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g469 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g470 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g471 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g472 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g473 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g474 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g475 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g476 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g477 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g478 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g479 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g480 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g481 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g482 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g483 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g484 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g485 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g486 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g487 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g488 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g489 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g490 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g491 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g492 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g493 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g494 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g495 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g496 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g497 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g498 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g499 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g500 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g501 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g502 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g503 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g504 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g505 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g506 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g507 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g508 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g509 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g510 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g511 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g512 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g513 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g514 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g515 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g516 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g517 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g518 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g519 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g520 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g521 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g522 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g523 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g524 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g525 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g526 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g527 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g528 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g529 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g530 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g531 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g532 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g533 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g534 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g535 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g536 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g537 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g538 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g539 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g540 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g541 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g542 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g543 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g544 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g545 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g546 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g547 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g548 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g549 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g550 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g551 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g552 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g553 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g554 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g555 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g556 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g557 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g558 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g559 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g560 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g561 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g562 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g563 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g564 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g565 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g566 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g567 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g568 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g569 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g570 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g571 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g572 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g573 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g574 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g575 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g576 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g577 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g578 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g579 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g580 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g581 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g582 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g583 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g584 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g585 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g586 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g587 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g588 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g589 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g590 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g591 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g592 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g593 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g594 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g595 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g596 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g597 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g598 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g599 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g600 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g601 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g602 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g603 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g604 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g605 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g606 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g607 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g608 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g609 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g610 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g611 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g612 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g613 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g614 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g615 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g616 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g617 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g618 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g619 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g620 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g621 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g622 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g623 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g624 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g625 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g626 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g627 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g628 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g629 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g630 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g631 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g632 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g633 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g634 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g635 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g636 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g637 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g638 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g639 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g640 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g641 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g642 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g643 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g644 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g645 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g646 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g647 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g648 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g649 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g650 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g651 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g652 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g653 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g654 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g655 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g656 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g657 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g658 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g659 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g660 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g661 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g662 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g663 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g664 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g665 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g666 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g667 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g668 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g669 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g670 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g671 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g672 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g673 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g674 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g675 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g676 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g677 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g678 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g679 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g680 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g681 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g682 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g683 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g684 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g685 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g686 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g687 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g688 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g689 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g690 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g691 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g692 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g693 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g694 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g695 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g696 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g697 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g698 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g699 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g700 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g701 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g702 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g703 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g704 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g705 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g706 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g707 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g708 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g709 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g710 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g711 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g712 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g713 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g714 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g715 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g716 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g717 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g718 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g719 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g720 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g721 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g722 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g723 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g724 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g725 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g726 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g727 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g728 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g729 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g730 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g731 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g732 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g733 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g734 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g735 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g736 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g737 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g738 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g739 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g740 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g741 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g742 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g743 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g744 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g745 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g746 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g747 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g748 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g749 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g750 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g751 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g752 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g753 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g754 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g755 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g756 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g757 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g758 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g759 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g760 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g761 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g762 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g763 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g764 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g765 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g766 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g767 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g768 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g769 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g770 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g771 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g772 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g773 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g774 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g775 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g776 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g777 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g778 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g779 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g780 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g781 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g782 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g783 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g784 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g785 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g786 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g787 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g788 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g789 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g790 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g791 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g792 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g793 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g794 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g795 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g796 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g797 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g798 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g799 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g800 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g801 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g802 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g803 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g804 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g805 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g806 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g807 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g808 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g809 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g810 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g811 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g812 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g813 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g814 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g815 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g816 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g817 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g818 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g819 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g820 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g821 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g822 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g823 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g824 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g825 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g826 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g827 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g828 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g829 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g830 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g831 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g832 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g833 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g834 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g835 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g836 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g837 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g838 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g839 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g840 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g841 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g842 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g843 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g844 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g845 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g846 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g847 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g848 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g849 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g850 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g851 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g852 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g853 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g854 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g855 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g856 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g857 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g858 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g859 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g860 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g861 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g862 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g863 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g864 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g865 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g866 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g867 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g868 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g869 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g870 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g871 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g872 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g873 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g874 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g875 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g876 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g877 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g878 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g879 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g880 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g881 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g882 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g883 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g884 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g885 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g886 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g887 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g888 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g889 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g890 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g891 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g892 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g893 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g894 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g895 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g896 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g897 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g898 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g899 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g900 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g901 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g902 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g903 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g904 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g905 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g906 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g907 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g908 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g909 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g910 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g911 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g912 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g913 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g914 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g915 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g916 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g917 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g918 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g919 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g920 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g921 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g922 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g923 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g924 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g925 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g926 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g927 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g928 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g929 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g930 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g931 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g932 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g933 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g934 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g935 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g936 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g937 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g938 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g939 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g940 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g941 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g942 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g943 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g944 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g945 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g946 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g947 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g948 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g949 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g950 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g951 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g952 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g953 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g954 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g955 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g956 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g957 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g958 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g959 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g960 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g961 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g962 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g963 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g964 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g965 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g966 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g967 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g968 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g969 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g970 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g971 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g972 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g973 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g974 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g975 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g976 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g977 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g978 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g979 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g980 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g981 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g982 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g983 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g984 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g985 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g986 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g987 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g988 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g989 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g990 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g991 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g992 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g993 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g994 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g995 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g996 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g997 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g998 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g999 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g1000 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g1001 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g1002 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g1003 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g1004 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g1005 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g1006 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g1007 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g1008 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g1009 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g1010 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g1011 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g1012 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g1013 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g1014 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g1015 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g1016 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g1017 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g1018 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g1019 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g1020 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g1021 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g1022 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g1023 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g1024 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g1025 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g1026 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g1027 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g1028 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g1029 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g1030 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g1031 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g1032 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g1033 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g1034 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g1035 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g1036 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g1037 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g1038 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g1039 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g1040 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g1041 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g1042 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g1043 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g1044 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g1045 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g1046 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g1047 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g1048 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g1049 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g1050 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g1051 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g1052 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g1053 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g1054 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g1055 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g1056 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g1057 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g1058 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g1059 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g1060 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g1061 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g1062 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g1063 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g1064 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g1065 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g1066 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g1067 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g1068 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g1069 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g1070 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g1071 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g1072 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g1073 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g1074 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g1075 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g1076 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g1077 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g1078 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g1079 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g1080 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g1081 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g1082 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g1083 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g1084 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g1085 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g1086 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g1087 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g1088 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g1089 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g1090 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g1091 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g1092 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g1093 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g1094 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g1095 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g1096 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g1097 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g1098 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g1099 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g1100 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g1101 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g1102 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g1103 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g1104 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g1105 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g1106 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g1107 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g1108 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g1109 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g1110 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g1111 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g1112 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g1113 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g1114 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g1115 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g1116 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g1117 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g1118 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g1119 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g1120 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g1121 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g1122 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g1123 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g1124 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g1125 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g1126 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g1127 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g1128 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g1129 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g1130 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g1131 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g1132 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g1133 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g1134 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g1135 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g1136 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g1137 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g1138 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g1139 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g1140 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g1141 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g1142 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g1143 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g1144 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g1145 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g1146 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g1147 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g1148 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g1149 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g1150 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g1151 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g1152 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g1153 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g1154 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g1155 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g1156 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g1157 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g1158 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g1159 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g1160 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g1161 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g1162 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g1163 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g1164 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g1165 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g1166 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g1167 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g1168 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g1169 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g1170 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g1171 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g1172 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g1173 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g1174 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g1175 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g1176 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g1177 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g1178 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g1179 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g1180 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g1181 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g1182 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g1183 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g1184 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g1185 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g1186 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g1187 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g1188 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g1189 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g1190 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g1191 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g1192 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g1193 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g1194 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g1195 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g1196 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g1197 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g1198 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g1199 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g1200 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g1201 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g1202 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g1203 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g1204 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g1205 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g1206 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g1207 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g1208 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g1209 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g1210 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g1211 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g1212 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g1213 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g1214 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g1215 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g1216 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g1217 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g1218 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g1219 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g1220 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g1221 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g1222 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g1223 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g1224 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g1225 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g1226 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g1227 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g1228 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g1229 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g1230 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g1231 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g1232 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g1233 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g1234 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g1235 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g1236 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g1237 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g1238 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g1239 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g1240 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g1241 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g1242 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g1243 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g1244 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g1245 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g1246 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g1247 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g1248 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g1249 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g1250 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g1251 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g1252 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g1253 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g1254 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g1255 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g1256 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g1257 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g1258 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g1259 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g1260 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g1261 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g1262 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g1263 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g1264 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g1265 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g1266 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g1267 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g1268 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g1269 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g1270 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g1271 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g1272 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g1273 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g1274 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g1275 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g1276 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g1277 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g1278 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g1279 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g1280 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g1281 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g1282 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g1283 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g1284 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g1285 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g1286 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g1287 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g1288 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g1289 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g1290 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g1291 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g1292 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g1293 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g1294 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g1295 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g1296 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g1297 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g1298 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g1299 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g1300 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g1301 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g1302 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g1303 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g1304 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g1305 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g1306 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g1307 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g1308 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g1309 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g1310 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g1311 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g1312 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g1313 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g1314 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g1315 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g1316 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g1317 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g1318 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g1319 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g1320 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g1321 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g1322 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g1323 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g1324 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g1325 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g1326 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g1327 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g1328 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g1329 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g1330 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g1331 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g1332 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g1333 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g1334 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g1335 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g1336 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g1337 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g1338 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g1339 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g1340 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g1341 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g1342 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g1343 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g1344 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g1345 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g1346 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g1347 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g1348 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g1349 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g1350 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g1351 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g1352 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g1353 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g1354 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g1355 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g1356 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g1357 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g1358 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g1359 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g1360 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g1361 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g1362 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g1363 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g1364 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g1365 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g1366 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g1367 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g1368 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g1369 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g1370 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g1371 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g1372 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g1373 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g1374 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g1375 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g1376 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g1377 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g1378 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g1379 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g1380 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g1381 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g1382 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g1383 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g1384 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g1385 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g1386 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g1387 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g1388 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g1389 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g1390 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g1391 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g1392 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g1393 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g1394 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g1395 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g1396 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g1397 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g1398 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g1399 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g1400 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g1401 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g1402 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g1403 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g1404 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g1405 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g1406 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g1407 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g1408 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g1409 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g1410 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g1411 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g1412 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g1413 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g1414 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g1415 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g1416 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g1417 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g1418 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g1419 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g1420 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g1421 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g1422 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g1423 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g1424 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g1425 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g1426 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g1427 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g1428 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g1429 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g1430 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g1431 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g1432 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g1433 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g1434 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g1435 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g1436 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g1437 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g1438 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g1439 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g1440 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g1441 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g1442 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g1443 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g1444 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g1445 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g1446 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g1447 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g1448 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g1449 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g1450 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g1451 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g1452 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g1453 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g1454 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g1455 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g1456 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g1457 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g1458 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g1459 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g1460 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g1461 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g1462 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g1463 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g1464 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g1465 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g1466 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g1467 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g1468 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g1469 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g1470 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g1471 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g1472 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g1473 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g1474 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g1475 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g1476 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g1477 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g1478 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g1479 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g1480 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g1481 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g1482 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g1483 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g1484 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g1485 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g1486 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g1487 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g1488 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g1489 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g1490 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g1491 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g1492 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g1493 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g1494 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g1495 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g1496 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g1497 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g1498 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g1499 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g1500 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g1501 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g1502 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g1503 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g1504 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g1505 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g1506 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g1507 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g1508 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g1509 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g1510 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g1511 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g1512 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g1513 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g1514 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g1515 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g1516 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g1517 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g1518 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g1519 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g1520 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g1521 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g1522 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g1523 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g1524 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g1525 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g1526 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g1527 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g1528 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g1529 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g1530 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g1531 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g1532 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g1533 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g1534 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g1535 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g1536 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g1537 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g1538 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g1539 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g1540 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g1541 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g1542 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g1543 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g1544 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g1545 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g1546 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g1547 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g1548 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g1549 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g1550 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g1551 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g1552 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g1553 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g1554 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g1555 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g1556 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g1557 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g1558 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g1559 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g1560 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g1561 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g1562 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g1563 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g1564 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g1565 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g1566 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g1567 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g1568 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g1569 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g1570 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g1571 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g1572 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g1573 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g1574 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g1575 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g1576 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g1577 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g1578 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g1579 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g1580 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g1581 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g1582 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g1583 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g1584 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g1585 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g1586 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g1587 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g1588 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g1589 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g1590 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g1591 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g1592 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g1593 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g1594 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g1595 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g1596 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g1597 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g1598 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g1599 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g1600 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g1601 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g1602 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g1603 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g1604 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g1605 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g1606 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g1607 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g1608 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g1609 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g1610 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g1611 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g1612 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g1613 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g1614 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g1615 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g1616 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g1617 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g1618 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g1619 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g1620 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g1621 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g1622 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g1623 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g1624 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g1625 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g1626 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g1627 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g1628 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g1629 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g1630 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g1631 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g1632 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g1633 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g1634 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g1635 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g1636 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g1637 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g1638 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g1639 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g1640 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g1641 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g1642 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g1643 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g1644 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g1645 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g1646 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g1647 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g1648 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g1649 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g1650 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g1651 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g1652 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g1653 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g1654 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g1655 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g1656 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g1657 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g1658 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g1659 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g1660 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g1661 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g1662 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g1663 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g1664 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g1665 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g1666 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g1667 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g1668 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g1669 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g1670 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g1671 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g1672 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g1673 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g1674 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g1675 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g1676 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g1677 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g1678 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g1679 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g1680 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g1681 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g1682 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g1683 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g1684 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g1685 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g1686 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g1687 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g1688 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g1689 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g1690 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g1691 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g1692 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g1693 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g1694 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g1695 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g1696 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g1697 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g1698 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g1699 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g1700 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g1701 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g1702 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g1703 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g1704 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g1705 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g1706 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g1707 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g1708 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g1709 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g1710 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g1711 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g1712 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g1713 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g1714 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g1715 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g1716 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g1717 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g1718 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g1719 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g1720 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g1721 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g1722 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g1723 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g1724 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g1725 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g1726 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g1727 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g1728 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g1729 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g1730 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g1731 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g1732 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g1733 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g1734 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g1735 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g1736 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g1737 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g1738 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g1739 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g1740 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g1741 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g1742 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
-var g1743 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(45 + 1))); };
-var g1744 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(46 + 1))); };
-var g1745 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(47 + 1))); };
-var g1746 = function(){ return BigNumber.fromNumber(1).mul(BigNumber.fromNumber(Math.log10(48 + 1))); };
-var g1747 = function(){ return BigNumber.fromNumber(2).mul(BigNumber.fromNumber(Math.log10(49 + 1))); };
-var g1748 = function(){ return BigNumber.fromNumber(3).mul(BigNumber.fromNumber(Math.log10(50 + 1))); };
-var g1749 = function(){ return BigNumber.fromNumber(4).mul(BigNumber.fromNumber(Math.log10(51 + 1))); };
-var g1750 = function(){ return BigNumber.fromNumber(5).mul(BigNumber.fromNumber(Math.log10(52 + 1))); };
-var g1751 = function(){ return BigNumber.fromNumber(6).mul(BigNumber.fromNumber(Math.log10(53 + 1))); };
-var g1752 = function(){ return BigNumber.fromNumber(7).mul(BigNumber.fromNumber(Math.log10(54 + 1))); };
-var g1753 = function(){ return BigNumber.fromNumber(8).mul(BigNumber.fromNumber(Math.log10(55 + 1))); };
-var g1754 = function(){ return BigNumber.fromNumber(9).mul(BigNumber.fromNumber(Math.log10(56 + 1))); };
-var g1755 = function(){ return BigNumber.fromNumber(10).mul(BigNumber.fromNumber(Math.log10(57 + 1))); };
-var g1756 = function(){ return BigNumber.fromNumber(11).mul(BigNumber.fromNumber(Math.log10(58 + 1))); };
-var g1757 = function(){ return BigNumber.fromNumber(12).mul(BigNumber.fromNumber(Math.log10(59 + 1))); };
-var g1758 = function(){ return BigNumber.fromNumber(13).mul(BigNumber.fromNumber(Math.log10(60 + 1))); };
-var g1759 = function(){ return BigNumber.fromNumber(14).mul(BigNumber.fromNumber(Math.log10(61 + 1))); };
-var g1760 = function(){ return BigNumber.fromNumber(15).mul(BigNumber.fromNumber(Math.log10(62 + 1))); };
-var g1761 = function(){ return BigNumber.fromNumber(16).mul(BigNumber.fromNumber(Math.log10(63 + 1))); };
-var g1762 = function(){ return BigNumber.fromNumber(17).mul(BigNumber.fromNumber(Math.log10(64 + 1))); };
-var g1763 = function(){ return BigNumber.fromNumber(18).mul(BigNumber.fromNumber(Math.log10(65 + 1))); };
-var g1764 = function(){ return BigNumber.fromNumber(19).mul(BigNumber.fromNumber(Math.log10(66 + 1))); };
-var g1765 = function(){ return BigNumber.fromNumber(20).mul(BigNumber.fromNumber(Math.log10(67 + 1))); };
-var g1766 = function(){ return BigNumber.fromNumber(21).mul(BigNumber.fromNumber(Math.log10(68 + 1))); };
-var g1767 = function(){ return BigNumber.fromNumber(22).mul(BigNumber.fromNumber(Math.log10(69 + 1))); };
-var g1768 = function(){ return BigNumber.fromNumber(23).mul(BigNumber.fromNumber(Math.log10(70 + 1))); };
-var g1769 = function(){ return BigNumber.fromNumber(24).mul(BigNumber.fromNumber(Math.log10(71 + 1))); };
-var g1770 = function(){ return BigNumber.fromNumber(25).mul(BigNumber.fromNumber(Math.log10(72 + 1))); };
-var g1771 = function(){ return BigNumber.fromNumber(26).mul(BigNumber.fromNumber(Math.log10(73 + 1))); };
-var g1772 = function(){ return BigNumber.fromNumber(27).mul(BigNumber.fromNumber(Math.log10(74 + 1))); };
-var g1773 = function(){ return BigNumber.fromNumber(28).mul(BigNumber.fromNumber(Math.log10(75 + 1))); };
-var g1774 = function(){ return BigNumber.fromNumber(29).mul(BigNumber.fromNumber(Math.log10(76 + 1))); };
-var g1775 = function(){ return BigNumber.fromNumber(30).mul(BigNumber.fromNumber(Math.log10(77 + 1))); };
-var g1776 = function(){ return BigNumber.fromNumber(31).mul(BigNumber.fromNumber(Math.log10(78 + 1))); };
-var g1777 = function(){ return BigNumber.fromNumber(32).mul(BigNumber.fromNumber(Math.log10(79 + 1))); };
-var g1778 = function(){ return BigNumber.fromNumber(33).mul(BigNumber.fromNumber(Math.log10(80 + 1))); };
-var g1779 = function(){ return BigNumber.fromNumber(34).mul(BigNumber.fromNumber(Math.log10(81 + 1))); };
-var g1780 = function(){ return BigNumber.fromNumber(35).mul(BigNumber.fromNumber(Math.log10(82 + 1))); };
-var g1781 = function(){ return BigNumber.fromNumber(36).mul(BigNumber.fromNumber(Math.log10(83 + 1))); };
-var g1782 = function(){ return BigNumber.fromNumber(37).mul(BigNumber.fromNumber(Math.log10(84 + 1))); };
-var g1783 = function(){ return BigNumber.fromNumber(38).mul(BigNumber.fromNumber(Math.log10(85 + 1))); };
-var g1784 = function(){ return BigNumber.fromNumber(39).mul(BigNumber.fromNumber(Math.log10(86 + 1))); };
-var g1785 = function(){ return BigNumber.fromNumber(40).mul(BigNumber.fromNumber(Math.log10(87 + 1))); };
-var g1786 = function(){ return BigNumber.fromNumber(41).mul(BigNumber.fromNumber(Math.log10(88 + 1))); };
-var g1787 = function(){ return BigNumber.fromNumber(42).mul(BigNumber.fromNumber(Math.log10(89 + 1))); };
-var g1788 = function(){ return BigNumber.fromNumber(43).mul(BigNumber.fromNumber(Math.log10(90 + 1))); };
-var g1789 = function(){ return BigNumber.fromNumber(44).mul(BigNumber.fromNumber(Math.log10(91 + 1))); };
-var g1790 = function(){ return BigNumber.fromNumber(45).mul(BigNumber.fromNumber(Math.log10(92 + 1))); };
-var g1791 = function(){ return BigNumber.fromNumber(46).mul(BigNumber.fromNumber(Math.log10(93 + 1))); };
-var g1792 = function(){ return BigNumber.fromNumber(47).mul(BigNumber.fromNumber(Math.log10(94 + 1))); };
-var g1793 = function(){ return BigNumber.fromNumber(48).mul(BigNumber.fromNumber(Math.log10(95 + 1))); };
-var g1794 = function(){ return BigNumber.fromNumber(49).mul(BigNumber.fromNumber(Math.log10(96 + 1))); };
-var g1795 = function(){ return BigNumber.fromNumber(50).mul(BigNumber.fromNumber(Math.log10(97 + 1))); };
-var g1796 = function(){ return BigNumber.fromNumber(51).mul(BigNumber.fromNumber(Math.log10(98 + 1))); };
-var g1797 = function(){ return BigNumber.fromNumber(52).mul(BigNumber.fromNumber(Math.log10(99 + 1))); };
-var g1798 = function(){ return BigNumber.fromNumber(53).mul(BigNumber.fromNumber(Math.log10(100 + 1))); };
-var g1799 = function(){ return BigNumber.fromNumber(54).mul(BigNumber.fromNumber(Math.log10(101 + 1))); };
-var g1800 = function(){ return BigNumber.fromNumber(55).mul(BigNumber.fromNumber(Math.log10(2 + 1))); };
-var g1801 = function(){ return BigNumber.fromNumber(56).mul(BigNumber.fromNumber(Math.log10(3 + 1))); };
-var g1802 = function(){ return BigNumber.fromNumber(57).mul(BigNumber.fromNumber(Math.log10(4 + 1))); };
-var g1803 = function(){ return BigNumber.fromNumber(58).mul(BigNumber.fromNumber(Math.log10(5 + 1))); };
-var g1804 = function(){ return BigNumber.fromNumber(59).mul(BigNumber.fromNumber(Math.log10(6 + 1))); };
-var g1805 = function(){ return BigNumber.fromNumber(60).mul(BigNumber.fromNumber(Math.log10(7 + 1))); };
-var g1806 = function(){ return BigNumber.fromNumber(61).mul(BigNumber.fromNumber(Math.log10(8 + 1))); };
-var g1807 = function(){ return BigNumber.fromNumber(62).mul(BigNumber.fromNumber(Math.log10(9 + 1))); };
-var g1808 = function(){ return BigNumber.fromNumber(63).mul(BigNumber.fromNumber(Math.log10(10 + 1))); };
-var g1809 = function(){ return BigNumber.fromNumber(64).mul(BigNumber.fromNumber(Math.log10(11 + 1))); };
-var g1810 = function(){ return BigNumber.fromNumber(65).mul(BigNumber.fromNumber(Math.log10(12 + 1))); };
-var g1811 = function(){ return BigNumber.fromNumber(66).mul(BigNumber.fromNumber(Math.log10(13 + 1))); };
-var g1812 = function(){ return BigNumber.fromNumber(67).mul(BigNumber.fromNumber(Math.log10(14 + 1))); };
-var g1813 = function(){ return BigNumber.fromNumber(68).mul(BigNumber.fromNumber(Math.log10(15 + 1))); };
-var g1814 = function(){ return BigNumber.fromNumber(69).mul(BigNumber.fromNumber(Math.log10(16 + 1))); };
-var g1815 = function(){ return BigNumber.fromNumber(70).mul(BigNumber.fromNumber(Math.log10(17 + 1))); };
-var g1816 = function(){ return BigNumber.fromNumber(71).mul(BigNumber.fromNumber(Math.log10(18 + 1))); };
-var g1817 = function(){ return BigNumber.fromNumber(72).mul(BigNumber.fromNumber(Math.log10(19 + 1))); };
-var g1818 = function(){ return BigNumber.fromNumber(73).mul(BigNumber.fromNumber(Math.log10(20 + 1))); };
-var g1819 = function(){ return BigNumber.fromNumber(74).mul(BigNumber.fromNumber(Math.log10(21 + 1))); };
-var g1820 = function(){ return BigNumber.fromNumber(75).mul(BigNumber.fromNumber(Math.log10(22 + 1))); };
-var g1821 = function(){ return BigNumber.fromNumber(76).mul(BigNumber.fromNumber(Math.log10(23 + 1))); };
-var g1822 = function(){ return BigNumber.fromNumber(77).mul(BigNumber.fromNumber(Math.log10(24 + 1))); };
-var g1823 = function(){ return BigNumber.fromNumber(78).mul(BigNumber.fromNumber(Math.log10(25 + 1))); };
-var g1824 = function(){ return BigNumber.fromNumber(79).mul(BigNumber.fromNumber(Math.log10(26 + 1))); };
-var g1825 = function(){ return BigNumber.fromNumber(80).mul(BigNumber.fromNumber(Math.log10(27 + 1))); };
-var g1826 = function(){ return BigNumber.fromNumber(81).mul(BigNumber.fromNumber(Math.log10(28 + 1))); };
-var g1827 = function(){ return BigNumber.fromNumber(82).mul(BigNumber.fromNumber(Math.log10(29 + 1))); };
-var g1828 = function(){ return BigNumber.fromNumber(83).mul(BigNumber.fromNumber(Math.log10(30 + 1))); };
-var g1829 = function(){ return BigNumber.fromNumber(84).mul(BigNumber.fromNumber(Math.log10(31 + 1))); };
-var g1830 = function(){ return BigNumber.fromNumber(85).mul(BigNumber.fromNumber(Math.log10(32 + 1))); };
-var g1831 = function(){ return BigNumber.fromNumber(86).mul(BigNumber.fromNumber(Math.log10(33 + 1))); };
-var g1832 = function(){ return BigNumber.fromNumber(87).mul(BigNumber.fromNumber(Math.log10(34 + 1))); };
-var g1833 = function(){ return BigNumber.fromNumber(88).mul(BigNumber.fromNumber(Math.log10(35 + 1))); };
-var g1834 = function(){ return BigNumber.fromNumber(89).mul(BigNumber.fromNumber(Math.log10(36 + 1))); };
-var g1835 = function(){ return BigNumber.fromNumber(90).mul(BigNumber.fromNumber(Math.log10(37 + 1))); };
-var g1836 = function(){ return BigNumber.fromNumber(91).mul(BigNumber.fromNumber(Math.log10(38 + 1))); };
-var g1837 = function(){ return BigNumber.fromNumber(92).mul(BigNumber.fromNumber(Math.log10(39 + 1))); };
-var g1838 = function(){ return BigNumber.fromNumber(93).mul(BigNumber.fromNumber(Math.log10(40 + 1))); };
-var g1839 = function(){ return BigNumber.fromNumber(94).mul(BigNumber.fromNumber(Math.log10(41 + 1))); };
-var g1840 = function(){ return BigNumber.fromNumber(95).mul(BigNumber.fromNumber(Math.log10(42 + 1))); };
-var g1841 = function(){ return BigNumber.fromNumber(96).mul(BigNumber.fromNumber(Math.log10(43 + 1))); };
-var g1842 = function(){ return BigNumber.fromNumber(97).mul(BigNumber.fromNumber(Math.log10(44 + 1))); };
+function g11(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g12(x) {
+    return f10(x).mul(BigNumber.from(2)).add(f2(x));
+}
+function g13(x,y) {
+    return f4(x,y,BigNumber.from(4)).add(f21(x));
+}
+function g14(x) {
+    return f9(x).add(BigNumber.from(1));
+}
+function g15(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g16(x) {
+    return f10(x).mul(BigNumber.from(6)).add(f2(x));
+}
+function g17(x,y) {
+    return f4(x,y,BigNumber.from(3)).add(f21(x));
+}
+function g18(x) {
+    return f9(x).add(BigNumber.from(5));
+}
+function g19(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g20(x) {
+    return f10(x).mul(BigNumber.from(10)).add(f2(x));
+}
+function g21(x,y) {
+    return f4(x,y,BigNumber.from(2)).add(f21(x));
+}
+function g22(x) {
+    return f9(x).add(BigNumber.from(2));
+}
+function g23(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g24(x) {
+    return f10(x).mul(BigNumber.from(3)).add(f2(x));
+}
+function g25(x,y) {
+    return f4(x,y,BigNumber.from(1)).add(f21(x));
+}
+function g26(x) {
+    return f9(x).add(BigNumber.from(6));
+}
+function g27(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g28(x) {
+    return f10(x).mul(BigNumber.from(7)).add(f2(x));
+}
+function g29(x,y) {
+    return f4(x,y,BigNumber.from(5)).add(f21(x));
+}
+function g30(x) {
+    return f9(x).add(BigNumber.from(3));
+}
+function g31(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g32(x) {
+    return f10(x).mul(BigNumber.from(11)).add(f2(x));
+}
+function g33(x,y) {
+    return f4(x,y,BigNumber.from(4)).add(f21(x));
+}
+function g34(x) {
+    return f9(x).add(BigNumber.from(7));
+}
+function g35(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g36(x) {
+    return f10(x).mul(BigNumber.from(4)).add(f2(x));
+}
+function g37(x,y) {
+    return f4(x,y,BigNumber.from(3)).add(f21(x));
+}
+function g38(x) {
+    return f9(x).add(BigNumber.from(4));
+}
+function g39(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g40(x) {
+    return f10(x).mul(BigNumber.from(8)).add(f2(x));
+}
+function g41(x,y) {
+    return f4(x,y,BigNumber.from(2)).add(f21(x));
+}
+function g42(x) {
+    return f9(x).add(BigNumber.from(1));
+}
+function g43(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g44(x) {
+    return f10(x).mul(BigNumber.from(1)).add(f2(x));
+}
+function g45(x,y) {
+    return f4(x,y,BigNumber.from(1)).add(f21(x));
+}
+function g46(x) {
+    return f9(x).add(BigNumber.from(5));
+}
+function g47(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g48(x) {
+    return f10(x).mul(BigNumber.from(5)).add(f2(x));
+}
+function g49(x,y) {
+    return f4(x,y,BigNumber.from(5)).add(f21(x));
+}
+function g50(x) {
+    return f9(x).add(BigNumber.from(2));
+}
+function g51(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g52(x) {
+    return f10(x).mul(BigNumber.from(9)).add(f2(x));
+}
+function g53(x,y) {
+    return f4(x,y,BigNumber.from(4)).add(f21(x));
+}
+function g54(x) {
+    return f9(x).add(BigNumber.from(6));
+}
+function g55(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g56(x) {
+    return f10(x).mul(BigNumber.from(2)).add(f2(x));
+}
+function g57(x,y) {
+    return f4(x,y,BigNumber.from(3)).add(f21(x));
+}
+function g58(x) {
+    return f9(x).add(BigNumber.from(3));
+}
+function g59(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g60(x) {
+    return f10(x).mul(BigNumber.from(6)).add(f2(x));
+}
+function g61(x,y) {
+    return f4(x,y,BigNumber.from(2)).add(f21(x));
+}
+function g62(x) {
+    return f9(x).add(BigNumber.from(7));
+}
+function g63(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g64(x) {
+    return f10(x).mul(BigNumber.from(10)).add(f2(x));
+}
+function g65(x,y) {
+    return f4(x,y,BigNumber.from(1)).add(f21(x));
+}
+function g66(x) {
+    return f9(x).add(BigNumber.from(4));
+}
+function g67(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g68(x) {
+    return f10(x).mul(BigNumber.from(3)).add(f2(x));
+}
+function g69(x,y) {
+    return f4(x,y,BigNumber.from(5)).add(f21(x));
+}
+function g70(x) {
+    return f9(x).add(BigNumber.from(1));
+}
+function g71(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g72(x) {
+    return f10(x).mul(BigNumber.from(7)).add(f2(x));
+}
+function g73(x,y) {
+    return f4(x,y,BigNumber.from(4)).add(f21(x));
+}
+function g74(x) {
+    return f9(x).add(BigNumber.from(5));
+}
+function g75(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g76(x) {
+    return f10(x).mul(BigNumber.from(11)).add(f2(x));
+}
+function g77(x,y) {
+    return f4(x,y,BigNumber.from(3)).add(f21(x));
+}
+function g78(x) {
+    return f9(x).add(BigNumber.from(2));
+}
+function g79(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g80(x) {
+    return f10(x).mul(BigNumber.from(4)).add(f2(x));
+}
+function g81(x,y) {
+    return f4(x,y,BigNumber.from(2)).add(f21(x));
+}
+function g82(x) {
+    return f9(x).add(BigNumber.from(6));
+}
+function g83(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g84(x) {
+    return f10(x).mul(BigNumber.from(8)).add(f2(x));
+}
+function g85(x,y) {
+    return f4(x,y,BigNumber.from(1)).add(f21(x));
+}
+function g86(x) {
+    return f9(x).add(BigNumber.from(3));
+}
+function g87(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g88(x) {
+    return f10(x).mul(BigNumber.from(1)).add(f2(x));
+}
+function g89(x,y) {
+    return f4(x,y,BigNumber.from(5)).add(f21(x));
+}
+function g90(x) {
+    return f9(x).add(BigNumber.from(7));
+}
+function g91(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g92(x) {
+    return f10(x).mul(BigNumber.from(5)).add(f2(x));
+}
+function g93(x,y) {
+    return f4(x,y,BigNumber.from(4)).add(f21(x));
+}
+function g94(x) {
+    return f9(x).add(BigNumber.from(4));
+}
+function g95(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g96(x) {
+    return f10(x).mul(BigNumber.from(9)).add(f2(x));
+}
+function g97(x,y) {
+    return f4(x,y,BigNumber.from(3)).add(f21(x));
+}
+function g98(x) {
+    return f9(x).add(BigNumber.from(1));
+}
+function g99(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g100(x) {
+    return f10(x).mul(BigNumber.from(2)).add(f2(x));
+}
+function g101(x,y) {
+    return f4(x,y,BigNumber.from(2)).add(f21(x));
+}
+function g102(x) {
+    return f9(x).add(BigNumber.from(5));
+}
+function g103(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g104(x) {
+    return f10(x).mul(BigNumber.from(6)).add(f2(x));
+}
+function g105(x,y) {
+    return f4(x,y,BigNumber.from(1)).add(f21(x));
+}
+function g106(x) {
+    return f9(x).add(BigNumber.from(2));
+}
+function g107(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g108(x) {
+    return f10(x).mul(BigNumber.from(10)).add(f2(x));
+}
+function g109(x,y) {
+    return f4(x,y,BigNumber.from(5)).add(f21(x));
+}
+function g110(x) {
+    return f9(x).add(BigNumber.from(6));
+}
+function g111(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g112(x) {
+    return f10(x).mul(BigNumber.from(3)).add(f2(x));
+}
+function g113(x,y) {
+    return f4(x,y,BigNumber.from(4)).add(f21(x));
+}
+function g114(x) {
+    return f9(x).add(BigNumber.from(3));
+}
+function g115(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g116(x) {
+    return f10(x).mul(BigNumber.from(7)).add(f2(x));
+}
+function g117(x,y) {
+    return f4(x,y,BigNumber.from(3)).add(f21(x));
+}
+function g118(x) {
+    return f9(x).add(BigNumber.from(7));
+}
+function g119(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g120(x) {
+    return f10(x).mul(BigNumber.from(11)).add(f2(x));
+}
+function g121(x,y) {
+    return f4(x,y,BigNumber.from(2)).add(f21(x));
+}
+function g122(x) {
+    return f9(x).add(BigNumber.from(4));
+}
+function g123(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g124(x) {
+    return f10(x).mul(BigNumber.from(4)).add(f2(x));
+}
+function g125(x,y) {
+    return f4(x,y,BigNumber.from(1)).add(f21(x));
+}
+function g126(x) {
+    return f9(x).add(BigNumber.from(1));
+}
+function g127(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g128(x) {
+    return f10(x).mul(BigNumber.from(8)).add(f2(x));
+}
+function g129(x,y) {
+    return f4(x,y,BigNumber.from(5)).add(f21(x));
+}
+function g130(x) {
+    return f9(x).add(BigNumber.from(5));
+}
+function g131(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g132(x) {
+    return f10(x).mul(BigNumber.from(1)).add(f2(x));
+}
+function g133(x,y) {
+    return f4(x,y,BigNumber.from(4)).add(f21(x));
+}
+function g134(x) {
+    return f9(x).add(BigNumber.from(2));
+}
+function g135(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g136(x) {
+    return f10(x).mul(BigNumber.from(5)).add(f2(x));
+}
+function g137(x,y) {
+    return f4(x,y,BigNumber.from(3)).add(f21(x));
+}
+function g138(x) {
+    return f9(x).add(BigNumber.from(6));
+}
+function g139(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g140(x) {
+    return f10(x).mul(BigNumber.from(9)).add(f2(x));
+}
+function g141(x,y) {
+    return f4(x,y,BigNumber.from(2)).add(f21(x));
+}
+function g142(x) {
+    return f9(x).add(BigNumber.from(3));
+}
+function g143(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g144(x) {
+    return f10(x).mul(BigNumber.from(2)).add(f2(x));
+}
+function g145(x,y) {
+    return f4(x,y,BigNumber.from(1)).add(f21(x));
+}
+function g146(x) {
+    return f9(x).add(BigNumber.from(7));
+}
+function g147(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g148(x) {
+    return f10(x).mul(BigNumber.from(6)).add(f2(x));
+}
+function g149(x,y) {
+    return f4(x,y,BigNumber.from(5)).add(f21(x));
+}
+function g150(x) {
+    return f9(x).add(BigNumber.from(4));
+}
+function g151(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g152(x) {
+    return f10(x).mul(BigNumber.from(10)).add(f2(x));
+}
+function g153(x,y) {
+    return f4(x,y,BigNumber.from(4)).add(f21(x));
+}
+function g154(x) {
+    return f9(x).add(BigNumber.from(1));
+}
+function g155(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g156(x) {
+    return f10(x).mul(BigNumber.from(3)).add(f2(x));
+}
+function g157(x,y) {
+    return f4(x,y,BigNumber.from(3)).add(f21(x));
+}
+function g158(x) {
+    return f9(x).add(BigNumber.from(5));
+}
+function g159(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g160(x) {
+    return f10(x).mul(BigNumber.from(7)).add(f2(x));
+}
+function g161(x,y) {
+    return f4(x,y,BigNumber.from(2)).add(f21(x));
+}
+function g162(x) {
+    return f9(x).add(BigNumber.from(2));
+}
+function g163(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g164(x) {
+    return f10(x).mul(BigNumber.from(11)).add(f2(x));
+}
+function g165(x,y) {
+    return f4(x,y,BigNumber.from(1)).add(f21(x));
+}
+function g166(x) {
+    return f9(x).add(BigNumber.from(6));
+}
+function g167(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g168(x) {
+    return f10(x).mul(BigNumber.from(4)).add(f2(x));
+}
+function g169(x,y) {
+    return f4(x,y,BigNumber.from(5)).add(f21(x));
+}
+function g170(x) {
+    return f9(x).add(BigNumber.from(3));
+}
+function g171(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g172(x) {
+    return f10(x).mul(BigNumber.from(8)).add(f2(x));
+}
+function g173(x,y) {
+    return f4(x,y,BigNumber.from(4)).add(f21(x));
+}
+function g174(x) {
+    return f9(x).add(BigNumber.from(7));
+}
+function g175(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g176(x) {
+    return f10(x).mul(BigNumber.from(1)).add(f2(x));
+}
+function g177(x,y) {
+    return f4(x,y,BigNumber.from(3)).add(f21(x));
+}
+function g178(x) {
+    return f9(x).add(BigNumber.from(4));
+}
+function g179(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g180(x) {
+    return f10(x).mul(BigNumber.from(5)).add(f2(x));
+}
+function g181(x,y) {
+    return f4(x,y,BigNumber.from(2)).add(f21(x));
+}
+function g182(x) {
+    return f9(x).add(BigNumber.from(1));
+}
+function g183(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g184(x) {
+    return f10(x).mul(BigNumber.from(9)).add(f2(x));
+}
+function g185(x,y) {
+    return f4(x,y,BigNumber.from(1)).add(f21(x));
+}
+function g186(x) {
+    return f9(x).add(BigNumber.from(5));
+}
+function g187(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g188(x) {
+    return f10(x).mul(BigNumber.from(2)).add(f2(x));
+}
+function g189(x,y) {
+    return f4(x,y,BigNumber.from(5)).add(f21(x));
+}
+function g190(x) {
+    return f9(x).add(BigNumber.from(2));
+}
+function g191(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(3)).add(f15(x,y));
+}
+function g192(x) {
+    return f10(x).mul(BigNumber.from(6)).add(f2(x));
+}
+function g193(x,y) {
+    return f4(x,y,BigNumber.from(4)).add(f21(x));
+}
+function g194(x) {
+    return f9(x).add(BigNumber.from(6));
+}
+function g195(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(1)).add(f15(x,y));
+}
+function g196(x) {
+    return f10(x).mul(BigNumber.from(10)).add(f2(x));
+}
+function g197(x,y) {
+    return f4(x,y,BigNumber.from(3)).add(f21(x));
+}
+function g198(x) {
+    return f9(x).add(BigNumber.from(3));
+}
+function g199(x,y,z) {
+    return f20(x,y,z).mul(BigNumber.from(2)).add(f15(x,y));
+}
+function g200(x) {
+    return f10(x).mul(BigNumber.from(3)).add(f2(x));
+}
+
+function update(dt) {
+    var incA = f1(rho).mul(BigNumber.from(0.5 * dt));
+    var incB = f4(sigma, delta, lambdaVar).mul(BigNumber.from(0.2 * dt));
+    var incC = f2(omega).mul(BigNumber.from(0.05 * dt));
+    var incD = f11(psi, theta).mul(BigNumber.from(0.15 * dt));
+    var incE = f5(zeta).mul(BigNumber.from(0.3 * dt));
+    rho = rho.add(incA).add(incC);
+    sigma = sigma.add(incB).add(incD);
+    delta = delta.add(incE);
+    lambdaVar = lambdaVar.add(f6(lambdaVar).mul(BigNumber.from(0.01 * dt)));
+    omega = omega.add(f7(omega, rho).mul(BigNumber.from(0.02 * dt)));
+    psi = psi.add(f12(psi).mul(BigNumber.from(0.005 * dt)));
+    theta = theta.add(f17(delta).mul(BigNumber.from(0.004 * dt)));
+    zeta = zeta.add(f18(omega, psi).mul(BigNumber.from(0.003 * dt)));
+    var heavy = heavyComputationCycle(Math.floor(rho.toNumber()) + Math.floor(sigma.toNumber()));
+    rho = rho.add(heavy.mul(BigNumber.from(1e-6)));
+    sigma = sigma.add(heavy.mul(BigNumber.from(5e-7)));
+    sigma = sigma.add(g1(sigma, rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g2(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    rho = rho.add(g3(rho).mul(BigNumber.from(4e-07)));
+    sigma = sigma.add(g4(sigma, rho).mul(BigNumber.from(5e-08)));
+    sigma = sigma.add(g5(sigma, rho).mul(BigNumber.from(1e-07)));
+    rho = rho.add(g6(rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g7(sigma, rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g8(sigma, rho).mul(BigNumber.from(5e-08)));
+    rho = rho.add(g9(rho).mul(BigNumber.from(5e-07)));
+    sigma = sigma.add(g10(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    sigma = sigma.add(g11(sigma, rho).mul(BigNumber.from(2e-07)));
+    rho = rho.add(g12(rho).mul(BigNumber.from(3e-07)));
+    sigma = sigma.add(g13(sigma, rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g14(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    rho = rho.add(g15(rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g16(sigma, rho).mul(BigNumber.from(5e-08)));
+    sigma = sigma.add(g17(sigma, rho).mul(BigNumber.from(1e-07)));
+    rho = rho.add(g18(rho).mul(BigNumber.from(4e-07)));
+    sigma = sigma.add(g19(sigma, rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g20(sigma, rho).mul(BigNumber.from(5e-08)));
+    rho = rho.add(g21(rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g22(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    sigma = sigma.add(g23(sigma, rho).mul(BigNumber.from(2e-07)));
+    rho = rho.add(g24(rho).mul(BigNumber.from(5e-07)));
+    sigma = sigma.add(g25(sigma, rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g26(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    rho = rho.add(g27(rho).mul(BigNumber.from(3e-07)));
+    sigma = sigma.add(g28(sigma, rho).mul(BigNumber.from(5e-08)));
+    sigma = sigma.add(g29(sigma, rho).mul(BigNumber.from(1e-07)));
+    rho = rho.add(g30(rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g31(sigma, rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g32(sigma, rho).mul(BigNumber.from(5e-08)));
+    rho = rho.add(g33(rho).mul(BigNumber.from(4e-07)));
+    sigma = sigma.add(g34(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    sigma = sigma.add(g35(sigma, rho).mul(BigNumber.from(2e-07)));
+    rho = rho.add(g36(rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g37(sigma, rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g38(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    rho = rho.add(g39(rho).mul(BigNumber.from(5e-07)));
+    sigma = sigma.add(g40(sigma, rho).mul(BigNumber.from(5e-08)));
+    sigma = sigma.add(g41(sigma, rho).mul(BigNumber.from(1e-07)));
+    rho = rho.add(g42(rho).mul(BigNumber.from(3e-07)));
+    sigma = sigma.add(g43(sigma, rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g44(sigma, rho).mul(BigNumber.from(5e-08)));
+    rho = rho.add(g45(rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g46(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    sigma = sigma.add(g47(sigma, rho).mul(BigNumber.from(2e-07)));
+    rho = rho.add(g48(rho).mul(BigNumber.from(4e-07)));
+    sigma = sigma.add(g49(sigma, rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g50(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    rho = rho.add(g51(rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g52(sigma, rho).mul(BigNumber.from(5e-08)));
+    sigma = sigma.add(g53(sigma, rho).mul(BigNumber.from(1e-07)));
+    rho = rho.add(g54(rho).mul(BigNumber.from(5e-07)));
+    sigma = sigma.add(g55(sigma, rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g56(sigma, rho).mul(BigNumber.from(5e-08)));
+    rho = rho.add(g57(rho).mul(BigNumber.from(3e-07)));
+    sigma = sigma.add(g58(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    sigma = sigma.add(g59(sigma, rho).mul(BigNumber.from(2e-07)));
+    rho = rho.add(g60(rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g61(sigma, rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g62(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    rho = rho.add(g63(rho).mul(BigNumber.from(4e-07)));
+    sigma = sigma.add(g64(sigma, rho).mul(BigNumber.from(5e-08)));
+    sigma = sigma.add(g65(sigma, rho).mul(BigNumber.from(1e-07)));
+    rho = rho.add(g66(rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g67(sigma, rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g68(sigma, rho).mul(BigNumber.from(5e-08)));
+    rho = rho.add(g69(rho).mul(BigNumber.from(5e-07)));
+    sigma = sigma.add(g70(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    sigma = sigma.add(g71(sigma, rho).mul(BigNumber.from(2e-07)));
+    rho = rho.add(g72(rho).mul(BigNumber.from(3e-07)));
+    sigma = sigma.add(g73(sigma, rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g74(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    rho = rho.add(g75(rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g76(sigma, rho).mul(BigNumber.from(5e-08)));
+    sigma = sigma.add(g77(sigma, rho).mul(BigNumber.from(1e-07)));
+    rho = rho.add(g78(rho).mul(BigNumber.from(4e-07)));
+    sigma = sigma.add(g79(sigma, rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g80(sigma, rho).mul(BigNumber.from(5e-08)));
+    rho = rho.add(g81(rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g82(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    sigma = sigma.add(g83(sigma, rho).mul(BigNumber.from(2e-07)));
+    rho = rho.add(g84(rho).mul(BigNumber.from(5e-07)));
+    sigma = sigma.add(g85(sigma, rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g86(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    rho = rho.add(g87(rho).mul(BigNumber.from(3e-07)));
+    sigma = sigma.add(g88(sigma, rho).mul(BigNumber.from(5e-08)));
+    sigma = sigma.add(g89(sigma, rho).mul(BigNumber.from(1e-07)));
+    rho = rho.add(g90(rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g91(sigma, rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g92(sigma, rho).mul(BigNumber.from(5e-08)));
+    rho = rho.add(g93(rho).mul(BigNumber.from(4e-07)));
+    sigma = sigma.add(g94(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    sigma = sigma.add(g95(sigma, rho).mul(BigNumber.from(2e-07)));
+    rho = rho.add(g96(rho).mul(BigNumber.from(2e-07)));
+    sigma = sigma.add(g97(sigma, rho).mul(BigNumber.from(1e-07)));
+    sigma = sigma.add(g98(sigma, rho).mul(BigNumber.from(1.5e-07)));
+    rho = rho.add(g99(rho).mul(BigNumber.from(5e-07)));
+    sigma = sigma.add(g100(sigma, rho).mul(BigNumber.from(5e-08)));
+    var candidate = rho.pow(BigNumber.from(50));
+    if (candidate.gt(tau429)) tau429 = candidate;
+    var cap = BigNumber.from(1e200);
+    if (rho.gt(cap)) rho = cap;
+    if (sigma.gt(cap)) sigma = cap;
+    if (delta.gt(cap)) delta = cap;
+    if (lambdaVar.gt(cap)) lambdaVar = cap;
+    if (omega.gt(cap)) omega = cap;
+}
+
+function tick(elapsedTime, multiplier) { update(elapsedTime * multiplier); }
+
+function getPrimaryEquation() { return "ρ̇ = mix(f1..f30, helpers, heavyComputation)"; }
+function getSecondaryEquation() { return "τ₄₂₉ = max(ρ^50)"; }
+function getPublicationMultiplier(tau) { return tau.pow(BigNumber.from(0.15)); }
+function getPublicationMultiplierFormula() { return "(max(ρ^50))^{0.15}"; }
+
+function exportState() {
+    var parts = [rho.toString(), sigma.toString(), delta.toString(), lambdaVar.toString(), omega.toString(), psi.toString(), theta.toString(), zeta.toString(), tau429.toString()];
+    return parts.join("|");
+}
+
+function importState(s) {
+    var parts = s.split("|");
+    if (parts.length > 0) rho = BigNumber.from(parts[0]);
+    if (parts.length > 1) sigma = BigNumber.from(parts[1]);
+    if (parts.length > 2) delta = BigNumber.from(parts[2]);
+    if (parts.length > 3) lambdaVar = BigNumber.from(parts[3]);
+    if (parts.length > 4) omega = BigNumber.from(parts[4]);
+    if (parts.length > 5) psi = BigNumber.from(parts[5]);
+    if (parts.length > 6) theta = BigNumber.from(parts[6]);
+    if (parts.length > 7) zeta = BigNumber.from(parts[7]);
+    if (parts.length > 8) tau429 = BigNumber.from(parts[8]);
+}
+
+function getInternalState() { return exportState(); }
+function setInternalState(s) { importState(s); }
+
+function get2DGraphValue() { return rho.toNumber(); }
+function get3DGraphPoint() { return new Vector3(rho.log10().toNumber(), sigma.log10().toNumber(), delta.log10().toNumber()); }
+
+function getTheoryName() { return name; }
+function getDescription() { return description; }
+function getAuthors() { return authors; }
+function getVersion() { return version; }
+
